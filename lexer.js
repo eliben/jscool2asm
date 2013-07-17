@@ -1,5 +1,20 @@
 'use strict';
 
+//
+// Token names:
+//
+// INTEGER
+// ID         (includes all keywords, object & type identifiers)
+// STRING
+//
+// Punctuation and operators:
+//  L_BRACE, R_BRACE, L_PAREN, R_PAREN, PLUS, MINUS, TILDE, MULTIPLY, DIVIDE,
+//  LE, LEQ, ARROW, DOT, SEMI, AT, COMMA, EQ, COLON
+//
+// Comments and whitespace are skipped by the lexer - not reported as tokens.
+// Strings may contain newlines escaped with '\'.
+// 
+
 var Lexer = exports.Lexer = function() {
   this.pos = 0;
   this.buf = null;
@@ -20,8 +35,7 @@ Lexer.prototype.input = function(buf) {
 // - name: name of the pattern that this token matched.
 // - value: actual string value of the token.
 // - pos: offset in the current buffer where the token starts.
-// - lineno: line number
-// - colno: column number
+// - lineno: line number.
 //
 // If there are no more tokens in the buffer, returns null. In case of
 // an error, returns a token with name 'ERROR' and a description of the error
@@ -44,14 +58,11 @@ Lexer._isdigit = function(c) {
 Lexer._isalpha = function(c) {
   return (c >= 'a' && c <= 'z') ||
          (c >= 'A' && c <= 'Z') ||
-         c === '_' || c === '$';
+         c === '_';
 }
 
 Lexer._isalphanum = function(c) {
-  return (c >= 'a' && c <= 'z') ||
-         (c >= 'A' && c <= 'Z') ||
-         (c >= '0' && c <= '9') ||
-         c === '_' || c === '$';
+  return Lexer._isdigit(c) || Lexer._isalpha(c);
 }
 
 Lexer.prototype._skipnontokens = function() {
