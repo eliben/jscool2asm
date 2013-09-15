@@ -75,8 +75,11 @@ Lexer._isalphanum = function(c) {
 Lexer.prototype._skipnontokens = function() {
   while (this.pos < this.buflen) {
     var c = this.buf.charAt(this.pos);
-    if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+    if (c == ' ' || c == '\t' || c == '\r') {
       this.pos++;
+    } else if (c == '\n') {
+      this.pos++;
+      this.lineno++;
     } else {
       break;
     }
