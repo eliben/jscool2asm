@@ -3,13 +3,19 @@
 //
 // Token names:
 //
-// INTEGER
-// ID         (includes all keywords, object & type identifiers)
-// STRING
+// Constants:
+//  INT_CONST, STR_CONST, BOOL_CONST
+//
+// Types and identifiers:
+//  TYPE, ID
 //
 // Punctuation and operators:
 //  L_BRACE, R_BRACE, L_PAREN, R_PAREN, PLUS, MINUS, TILDE, MULTIPLY, DIVIDE,
-//  LE, LEQ, ARROW, DOT, SEMI, AT, COMMA, EQ, COLON
+//  EQ, LE, LEQ, ARROW, DOT, SEMI, AT, COMMA, COLON
+//
+// Keywords:
+//  CLASS, ELSE, FI, IF, IN, INHERITS, LET, LOOP, POOL, THEN, WHILE, CASE, ESAC,
+//  OF, NEW, ISVOID, NOT, LET_STMT
 //
 // Comments and whitespace are skipped by the lexer - not reported as tokens.
 // Strings may contain newlines escaped with '\'.
@@ -28,6 +34,7 @@ Lexer.prototype.input = function(buf) {
   this.pos = 0;
   this.buf = buf;
   this.buflen = buf.length;
+  this.lineno = 1;
 }
 
 // Get the next token from the current buffer. A token is an object with
@@ -81,13 +88,13 @@ if (module.parent === null) {
 
   var lexer = new Lexer();
 
-  // lexer.input([ '[ + \t  \n = kl 234-jab',
-  //               '* // - + 2 kwa',
-  //               '/&  |"homer | marge"68'].join('\n'));
+  lexer.input([ '[ + \t  \n = kl 234-jab',
+                '* // - + 2 kwa',
+                '/&  |"homer | marge"68'].join('\n'));
 
-  var fs = require('fs');
-  var fileinput = fs.readFileSync('input.td', 'utf8');
-  lexer.input(fileinput);
+  //var fs = require('fs');
+  //var fileinput = fs.readFileSync('input.td', 'utf8');
+  //lexer.input(fileinput);
 
   var NTOKS = 9;
   while (true) {
