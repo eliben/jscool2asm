@@ -25,6 +25,9 @@ var Lexer = exports.Lexer = function() {
   this.pos = 0;
   this.buf = null;
   this.buflen = 0;
+
+  // List of errors accumulated (and recovered from) during lexing.
+  this.errors = [];
 }
 
 // Initialize the Lexer's buffer. This resets the lexer's internal
@@ -72,10 +75,44 @@ Lexer._isalphanum = function(c) {
   return Lexer._isdigit(c) || Lexer._isalpha(c);
 }
 
+Lexer.prototype._add_error = function(str) {
+  this.errors.push('Line ' + this.lineno.toString() + ': ' + str);
+}
+
 Lexer.prototype._skip_line_comment = function() {
+  // Skip until the end of the line
+  var c = this.buf.charAt(this.pos);
+  while (this.pos < this.buflen && !(c === '\r' || c === '\n')) {
+    c = this.buf.charAt(this.pos++);
+  }
 }
 
 Lexer.prototype._skip_multiline_comment = function() {
+  // Multi-line comments can be nested. nestcount keeps track of the level of
+  // nesting we're currently in. Note: when this function is invoked, we're
+  // inside the "toplevel" comment.
+  var nestcount = 0;
+  while (this.pos < this.buflen) {
+    var peek = this.buf.substr(this.pos, 2);
+    if (peek === '(*') {
+      this.pos += 2;
+      nestcount++;
+    } else if (peek === '*)') {
+      this.pos += 2;
+      if (nestcount === 0) {
+        return;
+      } else {
+        nestcount--;
+      }
+    } else {
+      if (peek[0] === '\n') {
+        this.lineno++;
+      }
+      this.pos++;
+    }
+  }
+
+  this._add_error('Unterminated multi-line comment at EOF');
 }
 
 Lexer.prototype._skipnontokens = function() {
@@ -115,9 +152,9 @@ if (module.parent === null) {
 
   var lexer = new Lexer();
 
-  lexer.input([ '[ + \t  \n = kl 234-jab',
-                '* // - + 2 kwa',
-                '/&  |"homer | marge"68'].join('\n'));
+  lexer.input([ '  -- juby \n',
+                '',
+                ''].join('\n'));
 
   //var fs = require('fs');
   //var fileinput = fs.readFileSync('input.td', 'utf8');
