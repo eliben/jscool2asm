@@ -72,14 +72,38 @@ Lexer._isalphanum = function(c) {
   return Lexer._isdigit(c) || Lexer._isalpha(c);
 }
 
+Lexer.prototype._skip_line_comment = function() {
+}
+
+Lexer.prototype._skip_multiline_comment = function() {
+}
+
 Lexer.prototype._skipnontokens = function() {
   while (this.pos < this.buflen) {
     var c = this.buf.charAt(this.pos);
-    if (c == ' ' || c == '\t' || c == '\r') {
+    if (c == ' ' || c == '\f' || c == '\v' || c == '\t' || c == '\r') {
       this.pos++;
     } else if (c == '\n') {
       this.pos++;
       this.lineno++;
+    } else if (c === '-') {
+      // Maybe it's the start of a line comment?
+      var next_c = this.buf.charAt(this.pos + 1);
+      if (next_c === '-') {
+        this.pos += 2;
+        this._skip_line_comment();
+      } else {
+        break;
+      }
+    } else if (c === '(') {
+      // Maybe it's the start of a multi-line comment?
+      var next_c = this.buf.charAt(this.pos + 1);
+      if (next_c === '*') {
+        this.post += 2;
+        this._skip_multiline_comment();
+      } else {
+        break;
+      }
     } else {
       break;
     }
