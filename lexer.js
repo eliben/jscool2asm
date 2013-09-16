@@ -55,6 +55,9 @@ Lexer.prototype.token = function() {
   if (this.pos >= this.buflen) {
     return null;
   }
+
+  // The char at this.pos is part of a real token. Figure out which.
+  var c = this.buf.charAt(this.pos);
 }
 
 Lexer._isnewline = function(c) {
@@ -147,6 +150,7 @@ Lexer.prototype._skipnontokens = function() {
   }
 }
 
+//------------------------------------------------
 if (module.parent === null) {
   console.log('main file');
 
