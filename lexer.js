@@ -65,8 +65,8 @@ Lexer.prototype.input = function(buf) {
 // - lineno: line number.
 //
 // If there are no more tokens in the buffer, returns null. In case of
-// an error, returns a token with name 'ERROR' and a description of the error
-// as the value.
+// an error, returns a token with name 'ERROR' and adds an error string to the
+// errors attribute.
 Lexer.prototype.token = function() {
   this._skipnontokens();
   if (this.pos >= this.buflen) {
@@ -84,11 +84,11 @@ Lexer.prototype.token = function() {
     var next_c = this.buf.charAt(this.pos + 1);
     if (next_c === '-') {
       var tok = this._maketoken('ARROW', c);
-      pos += 2;
+      this.pos += 2;
       return tok;
     } else if (next_c === '=') {
       var tok = this._maketoken('LEQ', c);
-      pos += 2;
+      this.pos += 2;
       return tok;
     } else {
       // The '<' stands on its own. pos++ to look at the next char again in the
@@ -103,15 +103,15 @@ Lexer.prototype.token = function() {
     return this._process_number();
   } else {
     this._add_error("Unknown token '" + c + "'");
-    this.pos++;
+    return this._maketoken('ERROR', '', this.pos++);
   }
 }
 
 // Creates a new token with the given name, value and pos. lineno is added
 // automatically. pos is optional: if not provided, this.pos is used.
 Lexer.prototype._maketoken = function(name, value, pos) {
-  var realpos = typeof pos === "undefined" ? this.pos : pos;
-  return {name: name, value: value, pos: pos, lineno: this.lineno};
+  var realpos = (typeof pos === "undefined") ? this.pos : pos;
+  return {name: name, value: value, pos: realpos, lineno: this.lineno};
 }
 
 Lexer._isdigit = function(c) {
@@ -269,8 +269,8 @@ if (module.parent === null) {
 
   lexer.input([
       '  -- juby \n',
-      'hoe+moped* (* huhu *) \t 2',
-      ''].join('\n'));
+      'hoe+moped* <- <= < => (* huhu(* *) \t 2',
+      '*) krisa 123 Joba'].join('\n'));
 
   //var fs = require('fs');
   //var fileinput = fs.readFileSync('input.td', 'utf8');
@@ -289,5 +289,7 @@ if (module.parent === null) {
       }
     }
   }
+  console.log('ERRORS:');
+  console.log(lexer.errors);
 }
 
