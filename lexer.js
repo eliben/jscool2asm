@@ -4,10 +4,10 @@
 // Token names:
 //
 // Constants:
-//  INT_CONST, STR_CONST, BOOL_CONST
+//  NUMBER, STRING
 //
 // Types and identifiers:
-//  TYPE, ID
+//  TYPE, IDENTIFIER
 //
 // Punctuation and operators:
 //  L_BRACE, R_BRACE, L_PAREN, R_PAREN, PLUS, MINUS, TILDE, MULTIPLY, DIVIDE,
@@ -19,7 +19,7 @@
 //
 // Comments and whitespace are skipped by the lexer - not reported as tokens.
 // Strings may contain newlines escaped with '\'.
-// 
+//
 
 var Lexer = exports.Lexer = function() {
   this.pos = 0;
@@ -107,10 +107,6 @@ Lexer.prototype.token = function() {
   }
 }
 
-Lexer._isnewline = function(c) {
-  return c === '\r' || c === '\n';
-}
-
 Lexer._isdigit = function(c) {
   return c >= '0' && c <= '9';
 }
@@ -119,6 +115,10 @@ Lexer._isalpha = function(c) {
   return (c >= 'a' && c <= 'z') ||
          (c >= 'A' && c <= 'Z') ||
          c === '_';
+}
+
+Lexer._isuppercase = function(c) {
+  return (c >= 'A' && c <= 'Z');
 }
 
 Lexer._isalphanum = function(c) {
@@ -194,6 +194,60 @@ Lexer.prototype._skipnontokens = function() {
     } else {
       break;
     }
+  }
+}
+
+Lexer.prototype._process_number = function() {
+  var endpos = this.pos + 1;
+  while (endpos < this.buflen &&
+         Lexer._isdigit(this.buf.charAt(endpos))) {
+    endpos++;
+  }
+
+  var tok = {
+    name: 'NUMBER',
+    value: this.buf.substring(this.pos, endpos),
+    pos: this.pos
+  };
+  this.pos = endpos;
+  return tok;
+}
+
+Lexer.prototype._process_identifier = function() {
+  var endpos = this.pos + 1;
+  while (endpos < this.buflen &&
+         Lexer._isalphanum(this.buf.charAt(endpos))) {
+    endpos++;
+  }
+
+  // Distinguish between types (identifiers starting with uppercase letters)
+  // and other identifiers.
+  var toktype = Lexer._isuppercase(this.buf.charAt(this.pos)) ? 'TYPE' :
+                                                                'IDENTIFIER';
+  var tok = {
+    name: toktype,
+    value: this.buf.substring(this.pos, endpos),
+    pos: this.pos
+  };
+  this.pos = endpos;
+  return tok;
+}
+
+Lexer.prototype._process_string = function() {
+  // this.pos points at the opening quote. Find the ending quote.
+  var end_index = this.buf.indexOf('"', this.pos + 1);
+
+  if (end_index === -1) {
+    throw Error('Unterminated quote at ' + this.pos);
+  } else {
+    // Look for newlines inside the string and make sure they are
+    var tok = {
+      name: 'QUOTE',
+      value: this.buf.substring(this.pos, end_index + 1),
+      pos: this.pos
+    };
+    this.pos = end_index + 1;
+    return tok;
   }
 }
 
