@@ -78,22 +78,22 @@ Lexer.prototype.token = function() {
   // Look it up in the table of operators
   var op = this.optable[c];
   if (op !== undefined) {
-    return {name: op, value: c, pos: this.pos++, lineno: this.lineno};
+    return this._maketoken(op, c, this.pos++);
   } else if (c === '<') {
     // Distinguish between '<', '<=',  and '<-'
     var next_c = this.buf.charAt(this.pos + 1);
     if (next_c === '-') {
-      var tok = {name: 'ARROW', value: c, pos: this.pos, lineno: this.lineno};
+      var tok = this._maketoken('ARROW', c);
       pos += 2;
       return tok;
     } else if (next_c === '=') {
-      var tok = {name: 'LEQ', value: c, pos: this.pos, lineno: this.lineno};
+      var tok = this._maketoken('LEQ', c);
       pos += 2;
       return tok;
     } else {
       // The '<' stands on its own. pos++ to look at the next char again in the
       // next token() call and figure out what token it belongs to.
-      return {name: 'LE', value: c, pos: this.pos++, lineno: this.lineno};
+      return this._maketoken('LE', c, this.pos++);
     }
   } else if (c === '"') {
     return this._process_string();
@@ -105,6 +105,13 @@ Lexer.prototype.token = function() {
     this._add_error("Unknown token '" + c + "'");
     this.pos++;
   }
+}
+
+// Creates a new token with the given name, value and pos. lineno is added
+// automatically. pos is optional: if not provided, this.pos is used.
+Lexer.prototype._maketoken = function(name, value, pos) {
+  var realpos = typeof pos === "undefined" ? this.pos : pos;
+  return {name: name, value: value, pos: pos, lineno: this.lineno};
 }
 
 Lexer._isdigit = function(c) {
@@ -224,11 +231,7 @@ Lexer.prototype._process_identifier = function() {
   // and other identifiers.
   var toktype = Lexer._isuppercase(this.buf.charAt(this.pos)) ? 'TYPE' :
                                                                 'IDENTIFIER';
-  var tok = {
-    name: toktype,
-    value: this.buf.substring(this.pos, endpos),
-    pos: this.pos
-  };
+  var tok = this._maketoken(toktype, this.buf.substring(this.pos, endpos));
   this.pos = endpos;
   return tok;
 }
@@ -238,17 +241,24 @@ Lexer.prototype._process_string = function() {
   var end_index = this.buf.indexOf('"', this.pos + 1);
 
   if (end_index === -1) {
-    throw Error('Unterminated quote at ' + this.pos);
+    this._add_error('Unterminated string');
+    return null;
   } else {
-    // Look for newlines inside the string and make sure they are
-    var tok = {
-      name: 'QUOTE',
-      value: this.buf.substring(this.pos, end_index + 1),
-      pos: this.pos
-    };
-    this.pos = end_index + 1;
-    return tok;
+    // Look for newlines inside the string and make sure they are escaped.
+    var nindex = this.pos + 1;
+    while ((nindex = this.buf.indexOf('\n', nindex)) > 0) {
+      if (this.buf.charAt(nindex - 1) !== '\\') {
+        // Invalid unescaped newline inside a string.
+        this._add_error('Unescaped newline inside a string');
+      }
+      this.lineno++;
+      nindex++;
+    }
   }
+  var tok = this._maketoken('STRING',
+                            this.buf.substring(this.pos, end_index + 1));
+  this.pos = end_index + 1;
+  return tok;
 }
 
 //------------------------------------------------
