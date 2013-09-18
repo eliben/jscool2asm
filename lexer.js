@@ -11,7 +11,7 @@
 //
 // Punctuation and operators:
 //  L_BRACE, R_BRACE, L_PAREN, R_PAREN, PLUS, MINUS, TILDE, MULTIPLY, DIVIDE,
-//  EQ, LE, LEQ, ARROW, DOT, SEMI, AT, COMMA, COLON
+//  EQ, GEQ, LE, LEQ, ARROW, DOT, SEMI, AT, COMMA, COLON
 //
 // Keywords:
 //  CLASS, ELSE, FI, IF, IN, INHERITS, LET, LOOP, POOL, THEN, WHILE, CASE, ESAC,
@@ -28,6 +28,23 @@ var Lexer = exports.Lexer = function() {
 
   // List of errors accumulated (and recovered from) during lexing.
   this.errors = [];
+
+  // Operator table, mapping operator -> token name
+  this.optable = {
+    '+':  'PLUS',
+    '-':  'MINUS',
+    '*':  'MULTIPLY',
+    '/':  'DIVIDE',
+    '{':  'L_BRACE',
+    '}':  'R_BRACE',
+    '(':  'L_PAREN',
+    ')':  'R_PAREN',
+    '~':  'TILDE',
+    '@':  'AT',
+    '.':  'PERIOD',
+    ',':  'COMMA',
+    ';':  'SEMI',
+  };
 }
 
 // Initialize the Lexer's buffer. This resets the lexer's internal
@@ -58,6 +75,36 @@ Lexer.prototype.token = function() {
 
   // The char at this.pos is part of a real token. Figure out which.
   var c = this.buf.charAt(this.pos);
+  // Look it up in the table of operators
+  var op = this.optable[c];
+  if (op !== undefined) {
+    return {name: op, value: c, pos: this.pos++, lineno: this.lineno};
+  } else if (c === '<') {
+    // Distinguish between '<', '<=',  and '<-'
+    var next_c = this.buf.charAt(this.pos + 1);
+    if (next_c === '-') {
+      var tok = {name: 'ARROW', value: c, pos: this.pos, lineno: this.lineno};
+      pos += 2;
+      return tok;
+    } else if (next_c === '=') {
+      var tok = {name: 'LEQ', value: c, pos: this.pos, lineno: this.lineno};
+      pos += 2;
+      return tok;
+    } else {
+      // The '<' stands on its own. pos++ to look at the next char again in the
+      // next token() call and figure out what token it belongs to.
+      return {name: 'LE', value: c, pos: this.pos++, lineno: this.lineno};
+    }
+  } else if (c === '"') {
+    return this._process_string();
+  } else if (Lexer._isalpha(c)) {
+    return this._process_identifier();
+  } else if (Lexer._isdigit(c)) {
+    return this._process_number();
+  } else {
+    this._add_error("Unknown token '" + c + "'");
+    this.pos++;
+  }
 }
 
 Lexer._isnewline = function(c) {
