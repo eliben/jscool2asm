@@ -11,7 +11,7 @@
 //
 // Punctuation and operators:
 //  L_BRACE, R_BRACE, L_PAREN, R_PAREN, PLUS, MINUS, TILDE, MULTIPLY, DIVIDE,
-//  EQ, GEQ, LE, LEQ, ARROW, DOT, SEMI, AT, COMMA, COLON
+//  EQ, CASE_ARROW, LE, LEQ, ASSIGN_ARROW, DOT, SEMI, AT, COMMA, COLON
 //
 // Keywords:
 //  CLASS, ELSE, FI, IF, IN, INHERITS, LET, LOOP, POOL, THEN, WHILE, CASE, ESAC,
@@ -83,7 +83,7 @@ Lexer.prototype.token = function() {
     // Distinguish between '<', '<=',  and '<-'
     var next_c = this.buf.charAt(this.pos + 1);
     if (next_c === '-') {
-      var tok = this._maketoken('ARROW', c);
+      var tok = this._maketoken('ASSIGN_ARROW', c);
       this.pos += 2;
       return tok;
     } else if (next_c === '=') {
@@ -99,7 +99,7 @@ Lexer.prototype.token = function() {
     // Distinguish between '=>' and '='
     var next_c = this.buf.charAt(this.pos + 1);
     if (next_c === '>') {
-      var tok = this._maketoken('GEQ', c);
+      var tok = this._maketoken('CASE_ARROW', c);
       this.pos += 2;
       return tok;
     } else {
