@@ -193,7 +193,7 @@ Lexer.prototype._skipnontokens = function() {
       // Maybe it's the start of a multi-line comment?
       var next_c = this.buf.charAt(this.pos + 1);
       if (next_c === '*') {
-        this.post += 2;
+        this.pos += 2;
         this._skip_multiline_comment();
       } else {
         break;
@@ -267,9 +267,10 @@ if (module.parent === null) {
 
   var lexer = new Lexer();
 
-  lexer.input([ '  -- juby \n',
-                '',
-                ''].join('\n'));
+  lexer.input([
+      '  -- juby \n',
+      'hoe+moped* (* huhu *) \t 2',
+      ''].join('\n'));
 
   //var fs = require('fs');
   //var fileinput = fs.readFileSync('input.td', 'utf8');
