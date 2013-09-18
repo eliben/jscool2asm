@@ -95,6 +95,17 @@ Lexer.prototype.token = function() {
       // next token() call and figure out what token it belongs to.
       return this._maketoken('LE', c, this.pos++);
     }
+  } else if (c === '=') {
+    // Distinguish between '=>' and '='
+    var next_c = this.buf.charAt(this.pos + 1);
+    if (next_c === '>') {
+      var tok = this._maketoken('GEQ', c);
+      this.pos += 2;
+      return tok;
+    } else {
+      // The '=' stands on tis own.
+      return this._maketoken('EQ', c, this.pos++);
+    }
   } else if (c === '"') {
     return this._process_string();
   } else if (Lexer._isalpha(c)) {
@@ -276,7 +287,7 @@ if (module.parent === null) {
   //var fileinput = fs.readFileSync('input.td', 'utf8');
   //lexer.input(fileinput);
 
-  var NTOKS = 9;
+  var NTOKS = 9999;
   while (true) {
     var tok = lexer.token();
     if (tok === null) {
