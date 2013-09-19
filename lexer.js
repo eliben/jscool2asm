@@ -254,6 +254,9 @@ Lexer.prototype._process_string = function() {
     // Look for newlines inside the string and make sure they are escaped.
     var nindex = this.pos + 1;
     while ((nindex = this.buf.indexOf('\n', nindex)) > 0) {
+      if (nindex > end_index) {
+        break;
+      }
       if (this.buf.charAt(nindex - 1) !== '\\') {
         // Invalid unescaped newline inside a string.
         this._add_error('Unescaped newline inside a string');
@@ -275,7 +278,7 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      'maxtron 100p  -- juby \n',
+      'maxtron 100p  -- juby',
       ' and now "a string"',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
