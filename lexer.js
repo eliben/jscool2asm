@@ -222,11 +222,7 @@ Lexer.prototype._process_number = function() {
     endpos++;
   }
 
-  var tok = {
-    name: 'NUMBER',
-    value: this.buf.substring(this.pos, endpos),
-    pos: this.pos
-  };
+  var tok = this._maketoken('NUMBER', this.buf.substring(this.pos, endpos));
   this.pos = endpos;
   return tok;
 }
@@ -279,7 +275,8 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      '  -- juby \n',
+      'maxtron 100p  -- juby \n',
+      ' and now "a string"',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
 
