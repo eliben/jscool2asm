@@ -1,0 +1,3 @@
+Next: add more tests to test/test_lexer.js
+- Improve assert_lexer_tokens to allow not specifying lineno and pos - this way
+  it will be easier to write more tests
