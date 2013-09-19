@@ -1,6 +1,7 @@
 'use strict';
 
 var assert = require('assert');
+
 var lexer = require('../lexer');
 
 
@@ -29,7 +30,9 @@ var lex_all = function(str) {
 // these exist they will be compared to the actual tokens.
 var assert_lexer_tokens = function(str, expected_toks) {
   var result = lex_all(str);
-  assert.equal(result.tokens.length, expected_toks.length);
+  if (result.tokens.length !== expected_toks.length) {
+    assert.deepEqual(result.tokens, expected_toks);
+  }
 
   for (var i = 0; i < result.tokens.length; ++i) {
     var exp_tok = expected_toks[i];
@@ -64,6 +67,22 @@ var test = function() {
     ]);
   assert_lexer_errors('topo %', ["Line 1: Unknown token '%'"]);
   assert_lexer_errors('topo \n$', ["Line 2: Unknown token '$'"]);
+
+  // Operators
+  assert_lexer_tokens('+ - * / ~ < <= = ( ) => <- ;', [
+    { name: 'PLUS', value: '+', pos: 0, lineno: 1 },
+    { name: 'MINUS', value: '-', pos: 2, lineno: 1 },
+    { name: 'MULTIPLY', value: '*', pos: 4, lineno: 1 },
+    { name: 'DIVIDE', value: '/', pos: 6, lineno: 1 },
+    { name: 'TILDE', value: '~', pos: 8, lineno: 1 },
+    { name: 'LE', value: '<', pos: 10, lineno: 1 },
+    { name: 'LEQ', value: '<=', pos: 12, lineno: 1 },
+    { name: 'EQ', value: '=', pos: 15, lineno: 1 },
+    { name: 'L_PAREN', value: '(', pos: 17, lineno: 1 },
+    { name: 'R_PAREN', value: ')', pos: 19, lineno: 1 },
+    { name: 'CASE_ARROW', value: '=>', pos: 21, lineno: 1 },
+    { name: 'ASSIGN_ARROW', value: '<-', pos: 24, lineno: 1 },
+    { name: 'SEMI', value: ';', pos: 27, lineno: 1 }])
 
   // Comments
   assert_lexer_tokens('\n-- comment 123\n--another 123', []);

@@ -83,11 +83,11 @@ Lexer.prototype.token = function() {
     // Distinguish between '<', '<=',  and '<-'
     var next_c = this.buf.charAt(this.pos + 1);
     if (next_c === '-') {
-      var tok = this._maketoken('ASSIGN_ARROW', c);
+      var tok = this._maketoken('ASSIGN_ARROW', '<-');
       this.pos += 2;
       return tok;
     } else if (next_c === '=') {
-      var tok = this._maketoken('LEQ', c);
+      var tok = this._maketoken('LEQ', '<=');
       this.pos += 2;
       return tok;
     } else {
@@ -99,11 +99,11 @@ Lexer.prototype.token = function() {
     // Distinguish between '=>' and '='
     var next_c = this.buf.charAt(this.pos + 1);
     if (next_c === '>') {
-      var tok = this._maketoken('CASE_ARROW', c);
+      var tok = this._maketoken('CASE_ARROW', '=>');
       this.pos += 2;
       return tok;
     } else {
-      // The '=' stands on tis own.
+      // The '=' stands on its own.
       return this._maketoken('EQ', c, this.pos++);
     }
   } else if (c === '"') {
@@ -282,7 +282,8 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      'maxtr -- juby',
+      '+ - * / ~ < <= = ( ) => <- ;',
+      'maxtr - juby',
       ' and now "a string"',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
