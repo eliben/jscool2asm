@@ -3,26 +3,36 @@
 var assert = require('assert');
 var lexer = require('../lexer');
 
-
-// Assert that lexing str produces the expected tokens, without any errors.
-var assert_lexer_tokens = function(str, expected_toks) {
+var lex_all = function(str) {
   var lex = new lexer.Lexer();
   lex.input(str);
 
-  var got_toks = []
+  var toks = []
   while (true) {
     var tok = lex.token();
     if (tok === null) {
       break;
     } else {
-      got_toks.push(tok);
+      toks.push(tok);
     }
   }
-
-  assert.deepEqual(got_toks, expected_toks);
-  assert.deepEqual(lex.errors, []);
+  return {'tokens': toks, 'errors': lex.errors};
 }
 
+
+// Assert that lexing str produces the expected tokens, without any errors.
+var assert_lexer_tokens = function(str, expected_toks) {
+  var result = lex_all(str);
+
+  assert.deepEqual(result.tokens, expected_toks);
+  assert.deepEqual(result.errors, []);
+}
+
+var assert_lexer_errors = function(str, expected_errors) {
+  var result = lex_all(str);
+
+  assert.deepEqual(result.errors, expected_errors);
+}
 
 var test = function() {
   assert_lexer_tokens('foobar 123', [
