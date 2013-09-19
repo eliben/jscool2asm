@@ -148,10 +148,14 @@ Lexer.prototype._add_error = function(str) {
 }
 
 Lexer.prototype._skip_line_comment = function() {
-  // Skip until the end of the line
+  // Skip until the end of the line, or buffer.
   var c = this.buf.charAt(this.pos);
-  while (this.pos < this.buflen && !(c === '\r' || c === '\n')) {
+  while (this.pos < this.buflen) {
     c = this.buf.charAt(this.pos++);
+    if (c === '\n') {
+      this.lineno++;
+      break;
+    }
   }
 }
 
@@ -186,9 +190,9 @@ Lexer.prototype._skip_multiline_comment = function() {
 Lexer.prototype._skipnontokens = function() {
   while (this.pos < this.buflen) {
     var c = this.buf.charAt(this.pos);
-    if (c == ' ' || c == '\f' || c == '\v' || c == '\t' || c == '\r') {
+    if (c === ' ' || c === '\f' || c === '\v' || c === '\t' || c === '\r') {
       this.pos++;
-    } else if (c == '\n') {
+    } else if (c === '\n') {
       this.pos++;
       this.lineno++;
     } else if (c === '-') {
@@ -278,7 +282,7 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      'maxtron 100p  -- juby',
+      'maxtr -- juby',
       ' and now "a string"',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
