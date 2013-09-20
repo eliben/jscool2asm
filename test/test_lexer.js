@@ -67,6 +67,20 @@ var test = function() {
   assert_lexer_errors('topo %', ["Line 1: Unknown token '%'"]);
   assert_lexer_errors('topo \n$', ["Line 2: Unknown token '$'"]);
 
+  // Keywords, types and identifiers
+  assert_lexer_tokens('Type id, if B2434', [
+    { name: 'TYPE', value: 'Type'},
+    { name: 'IDENTIFIER', value: 'id'},
+    { name: 'COMMA', value: ','},
+    { name: 'IF', value: 'if'},
+    { name: 'TYPE', value: 'B2434'}]);
+
+  assert_lexer_tokens('esac Esac OF of', [
+    { name: 'ESAC', value: 'esac'},
+    { name: 'TYPE', value: 'Esac'},
+    { name: 'TYPE', value: 'OF'},
+    { name: 'OF', value: 'of'}]);
+
   // Operators
   assert_lexer_tokens('+ - * / ~ < <= = ( ) => <- ;', [
     { name: 'PLUS', value: '+', pos: 0, lineno: 1 },
@@ -94,12 +108,13 @@ var test = function() {
     { name: 'STRING', value: '"in a string \\\nand next line"', pos: 2, lineno: 1},
     { name: 'IDENTIFIER', value: 'too', pos: 32, lineno: 2 }]);
 
+  assert_lexer_errors('"ffa\n2', ['Line 1: Unterminated string']);
+  assert_lexer_errors('x "in a string \nand next line" too', [
+    'Line 1: Unescaped newline inside a string']);
+
   // Comments
   assert_lexer_tokens('\n-- comment 123\n--another 123', []);
   assert_lexer_tokens('(*\n\n*)', []);
-
-  // Strings
-  assert_lexer_errors('"ffa\n2', ['Line 1: Unterminated string']);
 }
 
 

@@ -15,7 +15,7 @@
 //
 // Keywords:
 //  CLASS, ELSE, FI, IF, IN, INHERITS, LET, LOOP, POOL, THEN, WHILE, CASE, ESAC,
-//  OF, NEW, ISVOID, NOT, LET_STMT
+//  OF, NEW, ISVOID, NOT, LET
 //
 // Comments and whitespace are skipped by the lexer - not reported as tokens.
 // Strings may contain newlines escaped with '\'.
@@ -44,6 +44,17 @@ var Lexer = exports.Lexer = function() {
     '.':  'PERIOD',
     ',':  'COMMA',
     ';':  'SEMI',
+  };
+
+  // Keyword table, used as a set to recognize which identifiers are keywords.
+  // Maps lowercase keyword to an uppercase token name.
+  var keywords = ['class', 'else', 'fi', 'if', 'in', 'inherits', 'let',
+                  'loop', 'pool', 'then', 'while', 'case', 'esac', 'of', 'new',
+                  'isvoid', 'not', 'let'];
+
+  this.keywordtable = {};
+  for (var i = 0; i < keywords.length; i++) {
+    this.keywordtable[keywords[i]] = keywords[i].toUpperCase();
   };
 }
 
@@ -238,12 +249,20 @@ Lexer.prototype._process_identifier = function() {
          Lexer._isalphanum(this.buf.charAt(endpos))) {
     endpos++;
   }
+  var id = this.buf.substring(this.pos, endpos);
 
-  // Distinguish between types (identifiers starting with uppercase letters)
-  // and other identifiers.
-  var toktype = Lexer._isuppercase(this.buf.charAt(this.pos)) ? 'TYPE' :
-                                                                'IDENTIFIER';
-  var tok = this._maketoken(toktype, this.buf.substring(this.pos, endpos));
+  // Distinguish between keywords, types (identifiers starting with uppercase
+  // letters) and other identifiers.
+  var toktype;
+  var keyword_name = this.keywordtable[id];
+  if (keyword_name !== undefined) {
+    toktype = keyword_name;
+  } else if (Lexer._isuppercase(id[0])) {
+    toktype = 'TYPE';
+  } else {
+    toktype = 'IDENTIFIER';
+  }
+  var tok = this._maketoken(toktype, id);
   this.pos = endpos;
   return tok;
 }
@@ -287,7 +306,7 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      'x "in a string \\',
+      'esac Esac OF of',
       'and next line" too',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
