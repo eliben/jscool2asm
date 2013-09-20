@@ -118,11 +118,12 @@ Lexer.prototype.token = function() {
   }
 }
 
-// Creates a new token with the given name, value and pos. lineno is added
-// automatically. pos is optional: if not provided, this.pos is used.
-Lexer.prototype._maketoken = function(name, value, pos) {
+// Creates a new token with the given name, value and pos. pos and lineno are is
+// optional: if not provided, the object attributes are used
+Lexer.prototype._maketoken = function(name, value, pos, lineno) {
   var realpos = (typeof pos === "undefined") ? this.pos : pos;
-  return {name: name, value: value, pos: realpos, lineno: this.lineno};
+  var reallineno = (typeof lineno === "undefined") ? this.lineno : lineno;
+  return {name: name, value: value, pos: realpos, lineno: reallineno};
 }
 
 Lexer._isdigit = function(c) {
@@ -248,6 +249,9 @@ Lexer.prototype._process_identifier = function() {
 }
 
 Lexer.prototype._process_string = function() {
+  // this.lineno may advance while going through the string. Preserve the
+  // original for proper reporting for the string token.
+  var string_lineno = this.lineno;
   // this.pos points at the opening quote. Find the ending quote.
   var end_index = this.buf.indexOf('"', this.pos + 1);
 
@@ -270,7 +274,8 @@ Lexer.prototype._process_string = function() {
     }
   }
   var tok = this._maketoken('STRING',
-                            this.buf.substring(this.pos, end_index + 1));
+                            this.buf.substring(this.pos, end_index + 1),
+                            this.pos, string_lineno);
   this.pos = end_index + 1;
   return tok;
 }
@@ -282,9 +287,8 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      '+ - * / ~ < <= = ( ) => <- ;',
-      'maxtr - juby',
-      ' and now "a string"',
+      'x "in a string \\',
+      'and next line" too',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
 

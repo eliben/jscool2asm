@@ -63,8 +63,7 @@ var test = function() {
   // Basic tokens
   assert_lexer_tokens('foobar 123', [
     {"name":"IDENTIFIER","value":"foobar"},
-    {"name":"NUMBER","value":"123"}
-    ]);
+    {"name":"NUMBER","value":"123"}]);
   assert_lexer_errors('topo %', ["Line 1: Unknown token '%'"]);
   assert_lexer_errors('topo \n$', ["Line 2: Unknown token '$'"]);
 
@@ -82,7 +81,18 @@ var test = function() {
     { name: 'R_PAREN', value: ')', pos: 19, lineno: 1 },
     { name: 'CASE_ARROW', value: '=>', pos: 21, lineno: 1 },
     { name: 'ASSIGN_ARROW', value: '<-', pos: 24, lineno: 1 },
-    { name: 'SEMI', value: ';', pos: 27, lineno: 1 }])
+    { name: 'SEMI', value: ';', pos: 27, lineno: 1 }]);
+
+  // Strings
+  assert_lexer_tokens('out "inside" out', [
+    { name: 'IDENTIFIER', value: 'out'},
+    { name: 'STRING', value: '"inside"'},
+    { name: 'IDENTIFIER', value: 'out'}]);
+
+  assert_lexer_tokens('x "in a string \\\nand next line" too', [
+    { name: 'IDENTIFIER', value: 'x', pos: 0, lineno: 1},
+    { name: 'STRING', value: '"in a string \\\nand next line"', pos: 2, lineno: 1},
+    { name: 'IDENTIFIER', value: 'too', pos: 32, lineno: 2 }]);
 
   // Comments
   assert_lexer_tokens('\n-- comment 123\n--another 123', []);
