@@ -66,6 +66,9 @@ var test = function() {
     {"name":"NUMBER","value":"123"}]);
   assert_lexer_errors('topo %', ["Line 1: Unknown token '%'"]);
   assert_lexer_errors('topo \n$', ["Line 2: Unknown token '$'"]);
+  assert_lexer_errors('joe $\n %', [
+    'Line 1: Unknown token \'$\'',
+    'Line 2: Unknown token \'%\'']);
 
   // Keywords, types and identifiers
   assert_lexer_tokens('Type id, if B2434', [
