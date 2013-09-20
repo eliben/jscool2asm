@@ -82,7 +82,7 @@ var test = function() {
     { name: 'OF', value: 'of'}]);
 
   // Operators
-  assert_lexer_tokens('+ - * / ~ < <= = ( ) => <- ;', [
+  assert_lexer_tokens('+ - * / ~ < <= = ( ) => <- ; { } , . @', [
     { name: 'PLUS', value: '+', pos: 0, lineno: 1 },
     { name: 'MINUS', value: '-', pos: 2, lineno: 1 },
     { name: 'MULTIPLY', value: '*', pos: 4, lineno: 1 },
@@ -95,7 +95,12 @@ var test = function() {
     { name: 'R_PAREN', value: ')', pos: 19, lineno: 1 },
     { name: 'CASE_ARROW', value: '=>', pos: 21, lineno: 1 },
     { name: 'ASSIGN_ARROW', value: '<-', pos: 24, lineno: 1 },
-    { name: 'SEMI', value: ';', pos: 27, lineno: 1 }]);
+    { name: 'SEMI', value: ';', pos: 27, lineno: 1 },
+    { name: 'L_BRACE', value: '{', pos: 29, lineno: 1 },
+    { name: 'R_BRACE', value: '}', pos: 31, lineno: 1 },
+    { name: 'COMMA', value: ',', pos: 33, lineno: 1 },
+    { name: 'PERIOD', value: '.', pos: 35, lineno: 1 },
+    { name: 'AT', value: '@', pos: 37, lineno: 1 }]);
 
   // Strings
   assert_lexer_tokens('out "inside" out', [
@@ -115,6 +120,10 @@ var test = function() {
   // Comments
   assert_lexer_tokens('\n-- comment 123\n--another 123', []);
   assert_lexer_tokens('(*\n\n*)', []);
+  assert_lexer_errors('(*\n\n', ['Line 3: Unterminated multi-line comment at EOF']);
+  assert_lexer_tokens('id (* \n in comment (* nested *) \n *) out', [
+    { name: 'IDENTIFIER', value: 'id', lineno: 1 },
+    { name: 'IDENTIFIER', value: 'out', lineno: 3 }]);
 }
 
 

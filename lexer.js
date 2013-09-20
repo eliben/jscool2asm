@@ -306,8 +306,7 @@ if (module.parent === null) {
   var lexer = new Lexer();
 
   lexer.input([
-      'esac Esac OF of',
-      'and next line" too',
+      'id (* \n in comment (* nested *) \n *) (*out',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
 
