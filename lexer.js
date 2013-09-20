@@ -299,36 +299,37 @@ Lexer.prototype._process_string = function() {
   return tok;
 }
 
+// Utility function to lex all tokens from a given string. Returns tokens and
+// lexer errors packed into an object.
+var lex_all = exports.lex_all = function(str) {
+  var lex = new Lexer();
+  lex.input(str);
+
+  var toks = []
+  while (true) {
+    var tok = lex.token();
+    if (tok === null) {
+      break;
+    } else {
+      toks.push(tok);
+    }
+  }
+  return {'tokens': toks, 'errors': lex.errors};
+}
+
 //------------------------------------------------
 if (module.parent === null) {
-  console.log('main file');
-
-  var lexer = new Lexer();
-
-  lexer.input([
+  var r = lex_all([
       ' joe $ %',
       'id (* \n in comment (* nested *) \n *) (*out',
       'hoe+moped* <- <= < => (* huhu(* *) \t 2',
       '*) krisa 123 Joba'].join('\n'));
 
-  //var fs = require('fs');
-  //var fileinput = fs.readFileSync('input.td', 'utf8');
-  //lexer.input(fileinput);
-
-  var NTOKS = 9999;
-  while (true) {
-    var tok = lexer.token();
-    if (tok === null) {
-      break;
-    } else {
-      console.log(tok);
-      NTOKS--;
-      if (NTOKS <= 0) {
-        break;
-      }
-    }
-  }
+  console.log('Tokens');
+  for (var i = 0; i < r.tokens.length; i++) {
+    console.log(r.tokens[i]);
+  };
   console.log('ERRORS:');
-  console.log(lexer.errors);
+  console.log(r.errors);
 }
 

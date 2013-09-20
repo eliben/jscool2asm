@@ -1,35 +1,14 @@
 'use strict';
 
 var assert = require('assert');
-
 var lexer = require('../lexer');
-
-
-// Utility method to lex all tokens from a given string. Returns tokens and
-// lexer errors packed into an object.
-var lex_all = function(str) {
-  var lex = new lexer.Lexer();
-  lex.input(str);
-
-  var toks = []
-  while (true) {
-    var tok = lex.token();
-    if (tok === null) {
-      break;
-    } else {
-      toks.push(tok);
-    }
-  }
-  return {'tokens': toks, 'errors': lex.errors};
-}
-
 
 // Assert that lexing str produces the expected tokens, without any errors.
 // The expected tokens is an array of objects. These objects must have .name
 // and .value attributes. Optionally, they can also have .lineno and .pos - if
 // these exist they will be compared to the actual tokens.
 var assert_lexer_tokens = function(str, expected_toks) {
-  var result = lex_all(str);
+  var result = lexer.lex_all(str);
   if (result.tokens.length !== expected_toks.length) {
     assert.deepEqual(result.tokens, expected_toks);
   }
@@ -53,7 +32,7 @@ var assert_lexer_tokens = function(str, expected_toks) {
 
 
 var assert_lexer_errors = function(str, expected_errors) {
-  var result = lex_all(str);
+  var result = lexer.lex_all(str);
 
   assert.deepEqual(result.errors, expected_errors);
 }
