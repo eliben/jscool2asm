@@ -10,8 +10,9 @@
 //  TYPE, IDENTIFIER
 //
 // Punctuation and operators:
-//  L_BRACE, R_BRACE, L_PAREN, R_PAREN, PLUS, MINUS, TILDE, MULTIPLY, DIVIDE,
-//  EQ, CASE_ARROW, LE, LEQ, ASSIGN_ARROW, DOT, SEMI, AT, COMMA, COLON
+//  L_BRACE, R_BRACE, L_PAREN, R_PAREN, L_BRACKET, R_BRACKET, PLUS, MINUS,
+//  TILDE, MULTIPLY, DIVIDE, EQ, CASE_ARROW, LE, LEQ, ASSIGN_ARROW, DOT, SEMI,
+//  AT, COMMA, COLON
 //
 // Keywords:
 //  CLASS, ELSE, FI, IF, IN, INHERITS, LET, LOOP, POOL, THEN, WHILE, CASE, ESAC,
@@ -39,11 +40,14 @@ var Lexer = exports.Lexer = function() {
     '}':  'R_BRACE',
     '(':  'L_PAREN',
     ')':  'R_PAREN',
+    '[':  'L_BRACKET',
+    ']':  'R_BRACKET',
     '~':  'TILDE',
     '@':  'AT',
     '.':  'PERIOD',
     ',':  'COMMA',
     ';':  'SEMI',
+    ':':  'COLON',
   };
 
   // Keyword table, used as a set to recognize which identifiers are keywords.
