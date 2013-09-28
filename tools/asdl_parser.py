@@ -1,3 +1,4 @@
+# [1] "The Zephyr Abstract Syntax Description Language" by Wang, et. al.
 from collections import namedtuple
 from enum import Enum
 import re
@@ -8,7 +9,13 @@ TokenKind = Enum('TokenKind',
 
 Token = namedtuple('Token', 'kind value lineno')
 
-class ASDLSyntaxError(Exception): pass
+class ASDLSyntaxError(Exception):
+    def __init__(self, msg, lineno=None):
+        self.msg = msg
+        self.lineno = lineno or '<unknown>'
+
+    def __str__(self):
+        return 'Syntax error on line %s: %s' % (self.lineno, self.msg)
 
 _operator_table = {
     '=': TokenKind.Equals,      ',': TokenKind.Comma,   '?': TokenKind.Question,
@@ -51,19 +58,69 @@ def tokenize_asdl(buf):
                 if pos < 0: pos = buflen
                 continue
             else:
-                raise TokenError('Invalid operator %s on line %s' % (c, lineno))
+                raise ASDLSyntaxError('Invalid operator %s' % c, lineno)
         else:
             # Operators
             op_kind = _operator_table.get(c, None)
             if op_kind:
                 yield Token(op_kind, c, lineno)
             else:
-                raise TokenError('Invalid operator %s on line %s' % (c, lineno))
+                raise ASDLSyntaxError('Invalid operator %s' % c, lineno)
             pos += 1
 
+# The EBNF we're parsing here: Figure 1 of the paper [1]. Extended to support
+# "modules". Words starting with Capital letters are terminals. Others are
+# non-terminals. Id is either TokenId or ConstructorId.
+#
+# module        ::= Id Id "{" [definitions] "}"
+# definitions   ::= { TypeId "=" type
+# type          ::= product | sum
+# product       ::= fields
+# fields        ::= "(" { field, "," } field ")"
+# field         ::= TypeId ["?" | "*"] [Id]
+# sum           ::= constructor { "|" constructor } [Attributes fields]
+# constructor   ::= ConstructorId [fields]
+
+class ASDLParser:
+    def __init__(self):
+        self._tokenizer = None
+
+    def parse(self, buf):
+        """ Parse the ASDL in the buffer and return an AST with a Module root.
+        """
+        self._tokenizer = tokenize_asdl(buf)
+        while True:
+            self._get_next_token()
+            print(self.cur_token)
+            if self.cur_token is None:
+                print('--done--')
+                return
+
+    def _get_next_token(self):
+        try:
+            self.cur_token = next(self._tokenizer)
+        except StopIteration:
+            self.cur_token = None
+        # propagate ASDLSyntaxError from the tokenizer up
+
+    def _match(self, kind):
+        """ The 'match' primitive of RD parsers.
+            * Verifies that the current token is of the given kind
+            * Returns the value of the current token
+            * Reads in the next token
+        """
+        if self.cur_token.kind == kind:
+            val = self.cur_token.val
+            self._get_next_token()
+            return val
+        else:
+            raise ASDLSyntaxError('Unmatched %s (found %s)' % (
+                kind, self.cur_token.kind), self.cur_token.lineno)
+
+
 # This AST hierarchy is used to represent the parsed ASDL file as a tree. It's
-# an abstract representation of the grammar in Figure 2 of the ASDL Zephyr
-# paper. Taken from Python's Parser/asdl.py and adapted a bit for 3.4+.
+# an abstract representation of the grammar above.
+# Taken from Python's Parser/asdl.py and adapted a bit for 3.4+.
 
 builtin_types = ("identifier", "string", "bytes", "int", "object", "singleton")
 
@@ -148,6 +205,9 @@ if __name__ == '__main__':
 
     import sys
     buf = open(sys.argv[1]).read()
-    for t in tokenize_asdl(buf):
-        print(t)
+    p = ASDLParser()
+    p.parse(buf)
+
+    #for t in tokenize_asdl(buf):
+        #print(t)
 
