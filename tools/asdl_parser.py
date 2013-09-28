@@ -5,7 +5,6 @@ import re
 
 TokenKind = Enum('TokenKind',
     '''ConstructorId TypeId
-       Attributes Module
        Equals Question Pipe LParen RParen Comma Asterisk LBrace RBrace''')
 
 Token = namedtuple('Token', 'kind value lineno')
@@ -22,9 +21,6 @@ _operator_table = {
     '=': TokenKind.Equals,      ',': TokenKind.Comma,   '?': TokenKind.Question,
     '|': TokenKind.Pipe,        '(': TokenKind.LParen,  ')': TokenKind.RParen,
     '*': TokenKind.Asterisk,    '{': TokenKind.LBrace,  '}': TokenKind.RBrace}
-
-_keyword_table = {
-    'attributes': TokenKind.Attributes, 'module': TokenKind.Module}
 
 _re_nonword = re.compile(r'\W')
 _re_skip_whitespace = re.compile(r'\S')
@@ -48,10 +44,7 @@ def tokenize_asdl(buf):
             m = _re_nonword.search(buf, pos + 1)
             end = m.end() - 1 if m else buflen
             id = buf[pos:end]
-            keyword = _keyword_table.get(id, None)
-            if keyword:
-                yield Token(keyword, id, lineno)
-            elif c.isupper():
+            if c.isupper():
                 yield Token(TokenKind.ConstructorId, id, lineno)
             else:
                 yield Token(TokenKind.TypeId, id, lineno)
@@ -74,13 +67,14 @@ def tokenize_asdl(buf):
             pos += 1
 
 # The EBNF we're parsing here: Figure 1 of the paper [1]. Extended to support
-# "modules". Words starting with Capital letters are terminals. Others are
-# non-terminals. Id is either TokenId or ConstructorId.
-#
+# "modules" and attributes after a product. Words starting with Capital letters
+# are terminals. Others are non-terminals. Id is either TokenId or
+# ConstructorId.
+
 # module        ::= Id Id "{" [definitions] "}"
 # definitions   ::= { TypeId "=" type }
 # type          ::= product | sum
-# product       ::= fields
+# product       ::= fields [Attributes fields]
 # fields        ::= "(" { field, "," } field ")"
 # field         ::= TypeId ["?" | "*"] [Id]
 # sum           ::= constructor { "|" constructor } [Attributes fields]
@@ -99,7 +93,13 @@ class ASDLParser:
         return self._parse_module()
 
     def _parse_module(self):
-        self._match(TokenKind.Module)
+        if (self.cur_token.kind == TokenKind.TypeId and
+            self.cur_token.value == 'module'
+            ):
+            self._advance()
+        else:
+            raise ASDLSyntaxError('Expected "module" (found %s)' % (
+                self.cur_token.value), self.cur_token.lineno)
         name = self._match(self._id_kinds)
         self._match(TokenKind.LBrace)
         defs = self._parse_definitions()
@@ -109,6 +109,7 @@ class ASDLParser:
     def _parse_definitions(self):
         defs = []
         while self.cur_token.kind == TokenKind.TypeId:
+            print('@', self.cur_token.lineno)
             typename = self._advance()
             self._match(TokenKind.Equals)
             type = self._parse_type()
@@ -118,30 +119,38 @@ class ASDLParser:
     def _parse_type(self):
         if self.cur_token.kind == TokenKind.LParen:
             # If we see a (, it's a product
-            return Product(self._parse_fields())
+            return self._parse_product()
         else:
             # Otherwise it's a sum. Look for ConstructorId
             sumlist = [Constructor(self._match(TokenKind.ConstructorId),
                                    self._parse_optional_fields())]
-            while True:
-                if self.cur_token.kind == TokenKind.Pipe:
-                    # More constructors
-                    self._advance()
-                    sumlist.append(Constructor(
-                                    self._match(TokenKind.ConstructorId),
-                                    self._parse_optional_fields()))
-                elif self.cur_token.kind == TokenKind.Attributes:
+            while self.cur_token.kind  == TokenKind.Pipe:
+                # More constructors
+                self._advance()
+                sumlist.append(Constructor(
+                                self._match(TokenKind.ConstructorId),
+                                self._parse_optional_fields()))
+            return Sum(sumlist, self._parse_optional_attributes())
 
+    def _parse_product(self):
+        print('  parse product', self.cur_token)
+        return Product(self._parse_fields(), self._parse_optional_attributes())
 
     def _parse_fields(self):
+        print('  parse fields')
         fields = []
         self._match(TokenKind.LParen)
         while self.cur_token.kind == TokenKind.TypeId:
-            typename = self._match(TokenKind.TypeId)
+            typename = self._advance()
+            print('    saw typename =', typename)
             is_seq, is_opt = self._parse_optional_field_quantifier()
-            id = self._advance() if self.cur_token.kind in self._id_kinds
-                                 else None
-            fields.append(Field(typename id, seq=is_seq, opt=is_opt))
+            if self.cur_token.kind in self._id_kinds:
+                id = self._advance()
+                print('    got id = ', id)
+            else:
+                id = None
+            fields.append(Field(typename, id, seq=is_seq, opt=is_opt))
+            print('    added %s' % fields[-1])
             if self.cur_token.kind == TokenKind.RParen:
                 break
             elif self.cur_token.kind == TokenKind.Comma:
@@ -155,13 +164,22 @@ class ASDLParser:
         else:
             return None
 
+    def _parse_optional_attributes(self):
+        if (self.cur_token.kind == TokenKind.TypeId and
+            self.cur_token.value == 'attributes'
+            ):
+            self._advance()
+            return self._parse_fields()
+        else:
+            return None
+
     def _parse_optional_field_quantifier(self):
-        is_seq, is_opt= False, False
+        is_seq, is_opt = False, False
         if self.cur_token.kind == TokenKind.Asterisk:
-            is_seq= True
+            is_seq = True
             self._advance()
         elif self.cur_token.kind == TokenKind.Question:
-            is_opt= True
+            is_opt = True
             self._advance()
         return is_seq, is_opt
 
