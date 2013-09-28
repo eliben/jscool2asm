@@ -4,8 +4,9 @@ from enum import Enum
 import re
 
 TokenKind = Enum('TokenKind',
-    '''ConstructorId TypeId Attributes Equals Question Pipe LParen RParen Comma
-       Asterisk LBrace RBrace''')
+    '''ConstructorId TypeId 
+       Attributes Module
+       Equals Question Pipe LParen RParen Comma Asterisk LBrace RBrace''')
 
 Token = namedtuple('Token', 'kind value lineno')
 
@@ -21,6 +22,9 @@ _operator_table = {
     '=': TokenKind.Equals,      ',': TokenKind.Comma,   '?': TokenKind.Question,
     '|': TokenKind.Pipe,        '(': TokenKind.LParen,  ')': TokenKind.RParen,
     '*': TokenKind.Asterisk,    '{': TokenKind.LBrace,  '}': TokenKind.RBrace}
+
+_keyword_table = {
+    'attributes': TokenKind.Attributes, 'module': TokenKind.Module}
 
 _re_nonword = re.compile(r'\W')
 _re_skip_whitespace = re.compile(r'\S')
@@ -44,8 +48,9 @@ def tokenize_asdl(buf):
             m = _re_nonword.search(buf, pos + 1)
             end = m.end() - 1 if m else buflen
             id = buf[pos:end]
-            if id == 'attributes':
-                yield Token(TokenKind.Attributes, id, lineno)
+            keyword = _keyword_table.get(id, None)
+            if keyword:
+                yield Token(keyword, id, lineno)
             elif c.isupper():
                 yield Token(TokenKind.ConstructorId, id, lineno)
             else:
