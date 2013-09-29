@@ -3,6 +3,8 @@ from collections import namedtuple
 from enum import Enum
 import re
 
+from asdl_ast import Product, Sum, Module, Type, Constructor, Field
+
 # Types for describing tokens in an ASDL specification.
 TokenKind = Enum('TokenKind', '''ConstructorId TypeId Equals Question Pipe
                                  LParen RParen Comma Asterisk LBrace RBrace''')
@@ -109,7 +111,6 @@ class ASDLParser:
     def _parse_definitions(self):
         defs = []
         while self.cur_token.kind == TokenKind.TypeId:
-            print('@', self.cur_token.lineno)
             typename = self._advance()
             self._match(TokenKind.Equals)
             type = self._parse_type()
@@ -133,24 +134,19 @@ class ASDLParser:
             return Sum(sumlist, self._parse_optional_attributes())
 
     def _parse_product(self):
-        print('  parse product', self.cur_token)
         return Product(self._parse_fields(), self._parse_optional_attributes())
 
     def _parse_fields(self):
-        print('  parse fields')
         fields = []
         self._match(TokenKind.LParen)
         while self.cur_token.kind == TokenKind.TypeId:
             typename = self._advance()
-            print('    saw typename =', typename)
             is_seq, is_opt = self._parse_optional_field_quantifier()
             if self.cur_token.kind in self._id_kinds:
                 id = self._advance()
-                print('    got id = ', id)
             else:
                 id = None
             fields.append(Field(typename, id, seq=is_seq, opt=is_opt))
-            print('    added %s' % fields[-1])
             if self.cur_token.kind == TokenKind.RParen:
                 break
             elif self.cur_token.kind == TokenKind.Comma:
@@ -213,82 +209,6 @@ class ASDLParser:
             raise ASDLSyntaxError('Unmatched %s (found %s)' % (
                 kind, self.cur_token.kind), self.cur_token.lineno)
 
-
-# This AST hierarchy is used to represent the parsed ASDL file as a tree. It's
-# an abstract representation of the grammar above.
-# Taken from Python's Parser/asdl.py and adapted a bit for 3.4+.
-
-builtin_types = ("identifier", "string", "bytes", "int", "object", "singleton")
-
-class AST:
-    pass # a marker class
-
-class Module(AST):
-    def __init__(self, name, dfns):
-        self.name = name
-        self.dfns = dfns
-        self.types = {type.name: type.value for type in dfns}
-
-    def __repr__(self):
-        return "Module(%s, %s)" % (self.name, self.dfns)
-
-class Type(AST):
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
-
-    def __repr__(self):
-        return "Type(%s, %s)" % (self.name, self.value)
-
-class Constructor(AST):
-    def __init__(self, name, fields=None):
-        self.name = name
-        self.fields = fields or []
-
-    def __repr__(self):
-        return "Constructor(%s, %s)" % (self.name, self.fields)
-
-class Field(AST):
-    def __init__(self, type, name=None, seq=False, opt=False):
-        self.type = type
-        self.name = name
-        self.seq = seq
-        self.opt = opt
-
-    def __repr__(self):
-        if self.seq:
-            extra = ", seq=True"
-        elif self.opt:
-            extra = ", opt=True"
-        else:
-            extra = ""
-        if self.name is None:
-            return "Field(%s%s)" % (self.type, extra)
-        else:
-            return "Field(%s, %s%s)" % (self.type, self.name, extra)
-
-class Sum(AST):
-    def __init__(self, types, attributes=None):
-        self.types = types
-        self.attributes = attributes or []
-
-    def __repr__(self):
-        if self.attributes:
-            return "Sum(%s, %s)" % (self.types, self.attributes)
-        else:
-            return "Sum(%s)" % self.types
-
-class Product(AST):
-    def __init__(self, fields, attributes=None):
-        self.fields = fields
-        self.attributes = attributes or []
-
-    def __repr__(self):
-        if self.attributes:
-            return "Product(%s, %s)" % (self.fields, self.attributes)
-        else:
-            return "Product(%s)" % self.fields
-
 if __name__ == '__main__':
     buf = '''
         stm = Compound(stm, stm)
@@ -301,7 +221,7 @@ if __name__ == '__main__':
     with open(sys.argv[1]) as f:
         buf = f.read()
     p = ASDLParser()
-    p.parse(buf)
+    ast = p.parse(buf)
 
     #for t in tokenize_asdl(buf):
         #print(t)
