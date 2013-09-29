@@ -223,6 +223,8 @@ if __name__ == '__main__':
     p = ASDLParser()
     ast = p.parse(buf)
 
+    from asdl_ast import check
+    check(ast)
     #for t in tokenize_asdl(buf):
         #print(t)
 
