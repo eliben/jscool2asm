@@ -1252,7 +1252,8 @@ def main(srcfile):
     argv0 = os.sep.join(components[-2:])
     auto_gen_msg = common_msg % argv0
     p = asdl.ASDLParser()
-    mod = p.parse(open(srcfile).read())
+    with open(srcfile) as f:
+        mod = p.parse(f.read())
     if not check(mod):
         sys.exit(1)
     if INC_DIR:

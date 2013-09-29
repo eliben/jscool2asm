@@ -1,4 +1,26 @@
+#-------------------------------------------------------------------------------
+# Parser for ASDL [1] definition files. Reads in an ASDL description and parses
+# it into an AST (asdl_ast) that describes it.
+#
+# The EBNF we're parsing here: Figure 1 of the paper [1]. Extended to support
+# modules and attributes after a product. Words starting with Capital letters
+# are terminals. Others are non-terminals. Id is either TokenId or
+# ConstructorId.
+#
+# module        ::= Id Id "{" [definitions] "}"
+# definitions   ::= { TypeId "=" type }
+# type          ::= product | sum
+# product       ::= fields [attributes fields]
+# fields        ::= "(" { field, "," } field ")"
+# field         ::= TypeId ["?" | "*"] [Id]
+# sum           ::= constructor { "|" constructor } [attributes fields]
+# constructor   ::= ConstructorId [fields]
+#
 # [1] "The Zephyr Abstract Syntax Description Language" by Wang, et. al.
+#
+# Eli Bendersky (eliben@gmail.com)
+# This code is in the public domain
+#-------------------------------------------------------------------------------
 from collections import namedtuple
 from enum import Enum
 import re
@@ -20,7 +42,7 @@ class ASDLSyntaxError(Exception):
         return 'Syntax error on line %s: %s' % (self.lineno, self.msg)
 
 def tokenize_asdl(buf):
-    """ Tokenize the given buffer. Yield tokens.
+    """ Tokenize the given buffer. Yield Token objects.
     """
     buflen = len(buf)
     pos = 0
@@ -68,20 +90,6 @@ tokenize_asdl._operator_table = {
     '*': TokenKind.Asterisk,    '{': TokenKind.LBrace,  '}': TokenKind.RBrace}
 
 
-# The EBNF we're parsing here: Figure 1 of the paper [1]. Extended to support
-# modules and attributes after a product. Words starting with Capital letters
-# are terminals. Others are non-terminals. Id is either TokenId or
-# ConstructorId.
-
-# module        ::= Id Id "{" [definitions] "}"
-# definitions   ::= { TypeId "=" type }
-# type          ::= product | sum
-# product       ::= fields [attributes fields]
-# fields        ::= "(" { field, "," } field ")"
-# field         ::= TypeId ["?" | "*"] [Id]
-# sum           ::= constructor { "|" constructor } [attributes fields]
-# constructor   ::= ConstructorId [fields]
-
 class ASDLParser:
     def __init__(self):
         self._tokenizer = None
@@ -95,9 +103,7 @@ class ASDLParser:
         return self._parse_module()
 
     def _parse_module(self):
-        if (self.cur_token.kind == TokenKind.TypeId and
-            self.cur_token.value == 'module'
-            ):
+        if self._at_keyword('module'):
             self._advance()
         else:
             raise ASDLSyntaxError('Expected "module" (found %s)' % (
@@ -142,10 +148,8 @@ class ASDLParser:
         while self.cur_token.kind == TokenKind.TypeId:
             typename = self._advance()
             is_seq, is_opt = self._parse_optional_field_quantifier()
-            if self.cur_token.kind in self._id_kinds:
-                id = self._advance()
-            else:
-                id = None
+            id = (self._advance() if self.cur_token.kind in self._id_kinds
+                                  else None)
             fields.append(Field(typename, id, seq=is_seq, opt=is_opt))
             if self.cur_token.kind == TokenKind.RParen:
                 break
@@ -161,9 +165,7 @@ class ASDLParser:
             return None
 
     def _parse_optional_attributes(self):
-        if (self.cur_token.kind == TokenKind.TypeId and
-            self.cur_token.value == 'attributes'
-            ):
+        if self._at_keyword('attributes'):
             self._advance()
             return self._parse_fields()
         else:
@@ -208,6 +210,10 @@ class ASDLParser:
         else:
             raise ASDLSyntaxError('Unmatched %s (found %s)' % (
                 kind, self.cur_token.kind), self.cur_token.lineno)
+
+    def _at_keyword(self, keyword):
+        return (self.cur_token.kind == TokenKind.TypeId and
+                self.cur_token.value == keyword)
 
 if __name__ == '__main__':
     buf = '''

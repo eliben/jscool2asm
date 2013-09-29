@@ -1,15 +1,14 @@
-# Defines classes that represent a parsed ASDL description. In a way, this is
-# a meta-AST (AST that represents a description for encoding ASTs); in practice,
-# it's a useful hierarchical representation of an ASDL file created by the
-# parser.
+# Defines classes that represent a parsed ASDL description. In a way, this is a
+# meta-AST (AST that represents ASDL - itself a description for encoding ASTs);
+# in practice, it's a useful hierarchical representation of an ASDL file created
+# by the parser.
 #
 # Taken from Python's Parser/asdl.py and adapted a bit for 3.4+.
 
 builtin_types = set(
     ['identifier', 'string', 'bytes', 'int', 'object', 'singleton'])
 
-class AST:
-    pass # a marker class
+class AST: pass # a marker class
 
 class Module(AST):
     def __init__(self, name, dfns):
@@ -78,38 +77,28 @@ class Product(AST):
             return "Product(%s)" % self.fields
 
 class VisitorBase:
-    def __init__(self, skip=False):
+    """ Generic tree visitor for ASTs.
+    """
+    def __init__(self):
         self.cache = {}
-        self.skip = skip
 
-    def visit(self, object, *args):
-        meth = self._dispatch(object)
-        if meth:
-            try:
-                meth(object, *args)
-            except Exception as e:
-                print("Error visiting %r: %s" % (object, e))
-                # XXX hack
-                if hasattr(self, 'file'):
-                    self.file.flush()
-                raise
-
-    def _dispatch(self, object):
-        assert isinstance(object, AST), repr(object)
-        klass = object.__class__
+    def visit(self, obj, *args):
+        klass = obj.__class__
         meth = self.cache.get(klass)
         if meth is None:
             methname = "visit" + klass.__name__
-            if self.skip:
-                meth = getattr(self, methname, None)
-            else:
-                meth = getattr(self, methname)
+            meth = getattr(self, methname, None)
             self.cache[klass] = meth
-        return meth
+        if meth:
+            try:
+                meth(obj, *args)
+            except Exception as e:
+                print("Error visiting %r: %s" % (obj, e))
+                raise
 
 class Check(VisitorBase):
     def __init__(self):
-        super().__init__(skip=True)
+        super().__init__()
         self.cons = {}
         self.errors = 0
         self.types = {}
@@ -154,7 +143,7 @@ def check(mod):
         if t not in mod.types and not t in builtin_types:
             v.errors += 1
             uses = ", ".join(v.types[t])
-            output("Undefined type %s, used in %s" % (t, uses))
+            print("Undefined type %s, used in %s" % (t, uses))
 
     return not v.errors
 
