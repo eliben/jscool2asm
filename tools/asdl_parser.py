@@ -227,9 +227,7 @@ class Module(AST):
     def __init__(self, name, dfns):
         self.name = name
         self.dfns = dfns
-        self.types = {} # maps type name to value (from dfns)
-        for type in dfns:
-            self.types[type.name.value] = type.value
+        self.types = {type.name: type.value for type in dfns}
 
     def __repr__(self):
         return "Module(%s, %s)" % (self.name, self.dfns)
