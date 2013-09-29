@@ -3,9 +3,9 @@ from collections import namedtuple
 from enum import Enum
 import re
 
-TokenKind = Enum('TokenKind',
-    '''ConstructorId TypeId
-       Equals Question Pipe LParen RParen Comma Asterisk LBrace RBrace''')
+# Types for describing tokens in an ASDL specification.
+TokenKind = Enum('TokenKind', '''ConstructorId TypeId Equals Question Pipe
+                                 LParen RParen Comma Asterisk LBrace RBrace''')
 
 Token = namedtuple('Token', 'kind value lineno')
 
@@ -17,15 +17,6 @@ class ASDLSyntaxError(Exception):
     def __str__(self):
         return 'Syntax error on line %s: %s' % (self.lineno, self.msg)
 
-_operator_table = {
-    '=': TokenKind.Equals,      ',': TokenKind.Comma,   '?': TokenKind.Question,
-    '|': TokenKind.Pipe,        '(': TokenKind.LParen,  ')': TokenKind.RParen,
-    '*': TokenKind.Asterisk,    '{': TokenKind.LBrace,  '}': TokenKind.RBrace}
-
-_re_nonword = re.compile(r'\W')
-_re_skip_whitespace = re.compile(r'\S')
-
-
 def tokenize_asdl(buf):
     """ Tokenize the given buffer. Yield tokens.
     """
@@ -34,14 +25,14 @@ def tokenize_asdl(buf):
     lineno = 1
 
     while pos < buflen:
-        m = _re_skip_whitespace.search(buf, pos)
+        m = tokenize_asdl._re_skip_whitespace.search(buf, pos)
         if not m: return
         lineno += buf.count('\n', pos, m.start())
         pos = m.start()
         c = buf[pos]
         if c.isalpha():
             # Some kind of identifier
-            m = _re_nonword.search(buf, pos + 1)
+            m = tokenize_asdl._re_nonword.search(buf, pos + 1)
             end = m.end() - 1 if m else buflen
             id = buf[pos:end]
             if c.isupper():
@@ -59,25 +50,34 @@ def tokenize_asdl(buf):
                 raise ASDLSyntaxError('Invalid operator %s' % c, lineno)
         else:
             # Operators
-            op_kind = _operator_table.get(c, None)
+            op_kind = tokenize_asdl._operator_table.get(c, None)
             if op_kind:
                 yield Token(op_kind, c, lineno)
             else:
                 raise ASDLSyntaxError('Invalid operator %s' % c, lineno)
             pos += 1
 
+# Immutable helper objects for tokenize_asdl.
+tokenize_asdl._re_skip_whitespace = re.compile(r'\S')
+tokenize_asdl._re_nonword = re.compile(r'\W')
+tokenize_asdl._operator_table = {
+    '=': TokenKind.Equals,      ',': TokenKind.Comma,   '?': TokenKind.Question,
+    '|': TokenKind.Pipe,        '(': TokenKind.LParen,  ')': TokenKind.RParen,
+    '*': TokenKind.Asterisk,    '{': TokenKind.LBrace,  '}': TokenKind.RBrace}
+
+
 # The EBNF we're parsing here: Figure 1 of the paper [1]. Extended to support
-# "modules" and attributes after a product. Words starting with Capital letters
+# modules and attributes after a product. Words starting with Capital letters
 # are terminals. Others are non-terminals. Id is either TokenId or
 # ConstructorId.
 
 # module        ::= Id Id "{" [definitions] "}"
 # definitions   ::= { TypeId "=" type }
 # type          ::= product | sum
-# product       ::= fields [Attributes fields]
+# product       ::= fields [attributes fields]
 # fields        ::= "(" { field, "," } field ")"
 # field         ::= TypeId ["?" | "*"] [Id]
-# sum           ::= constructor { "|" constructor } [Attributes fields]
+# sum           ::= constructor { "|" constructor } [attributes fields]
 # constructor   ::= ConstructorId [fields]
 
 class ASDLParser:
@@ -273,10 +273,10 @@ class Sum(AST):
         self.attributes = attributes or []
 
     def __repr__(self):
-        if self.attributes is None:
-            return "Sum(%s)" % self.types
-        else:
+        if self.attributes:
             return "Sum(%s, %s)" % (self.types, self.attributes)
+        else:
+            return "Sum(%s)" % self.types
 
 class Product(AST):
     def __init__(self, fields, attributes=None):
@@ -284,10 +284,10 @@ class Product(AST):
         self.attributes = attributes or []
 
     def __repr__(self):
-        if self.attributes is None:
-            return "Product(%s)" % self.fields
-        else:
+        if self.attributes:
             return "Product(%s, %s)" % (self.fields, self.attributes)
+        else:
+            return "Product(%s)" % self.fields
 
 if __name__ == '__main__':
     buf = '''
