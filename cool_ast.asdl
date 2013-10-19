@@ -1,0 +1,38 @@
+module COOL
+{
+    program = Program(class* classes)
+
+    class = Class(identifier name, identifier parent, feature* features,
+                  identifier filename)
+
+    feature = Method(identifier name, formal* formals, identifier return_type,
+                     expression expr)
+            | Attr(identifier name, identifier type_decl, expression init)
+
+    formal = Formal(identifier name, identifier type_decl)
+
+    case = Case(identifier name, identifier type_decl, expression expr)
+
+    expression = Assign(identifier name, expression expr)
+               | StaticDispatch(expression expr, identifier type_name,
+                                identifier name, expression actual)
+               | Cond(expression pred, expression then_exp, expression else_exp)
+               | Loop(expression pred, expression body)
+               | Typcase(expression expr, case* cases)
+               | Block(expression body)
+               | Let(identifier id, identifier type_decl,
+                     expression init, expression body)
+               | BinaryOp(operator op, expression left, expression right)
+               | UnaryOp(operator op, expression expr)
+               | IntConst(identifier token)
+               | BoolConst(boolean value)
+               | StringConst(identifier token)
+               | New(identifier type_name)
+               | IsVoid(expression expr)
+               | NoExpr
+               | Object(identifier name)
+
+    operator = Add | Sub | Mul | Div | Neg | Lt | Eq | Leq | Comp
+}
+
+

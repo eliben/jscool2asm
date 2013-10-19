@@ -6,7 +6,7 @@
 # Taken from Python's Parser/asdl.py and adapted a bit for 3.4+.
 
 builtin_types = set(
-    ['identifier', 'string', 'bytes', 'int', 'object', 'singleton'])
+    ['boolean', 'identifier', 'string', 'bytes', 'int', 'object', 'singleton'])
 
 class AST: pass # a marker class
 

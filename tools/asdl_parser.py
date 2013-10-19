@@ -231,6 +231,7 @@ if __name__ == '__main__':
 
     from asdl_ast import check
     check(ast)
+    print(ast)
     #for t in tokenize_asdl(buf):
         #print(t)
 
