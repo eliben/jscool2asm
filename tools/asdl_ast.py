@@ -136,6 +136,11 @@ class Check(VisitorBase):
             self.visit(f, name)
 
 def check(mod):
+    """Check the parsed ASDL tree for correctness.
+
+    Return True if success. For failure, the errors are printed out and False
+    is returned.
+    """
     v = Check()
     v.visit(mod)
 
