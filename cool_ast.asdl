@@ -22,8 +22,8 @@ module COOL
                | Block(expression body)
                | Let(identifier id, identifier type_decl,
                      expression init, expression body)
-               | BinaryOp(operator op, expression left, expression right)
-               | UnaryOp(operator op, expression expr)
+               | BinaryOp(identifier op, expression left, expression right)
+               | UnaryOp(identifier op, expression expr)
                | IntConst(identifier token)
                | BoolConst(boolean value)
                | StringConst(identifier token)
@@ -31,8 +31,5 @@ module COOL
                | IsVoid(expression expr)
                | NoExpr
                | Object(identifier name)
-
-    operator = Add | Sub | Mul | Div | Neg | Lt | Eq | Leq | Comp
 }
-
 
