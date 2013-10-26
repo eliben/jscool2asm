@@ -1,6 +1,3 @@
-Write an ASDL parser in Python 3.3+; it should create the same ASDL description
-as the one used by Python's Parser/asdl.py; then, write a separate JS-code
-generator from this description.
+* Write simple test discovery in test/all_tests.js and just run that from the
+  makefile.
 
-For COOL, the input will be cool-ast.asdl and the output will be a cool-ast.js
-module that will describe the AST of cool

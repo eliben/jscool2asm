@@ -20,30 +20,30 @@ ASTError.prototype.constructor = ASTError;
 // Some helper code used throughout the module
 var _check_string = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object String]') {
-    throw ASTError(who + ' expects ' + what + ' to be a string');
+    throw new ASTError(who + ' expects ' + what + ' to be a string');
   }
 }
 
 var _check_boolean = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object Boolean]') {
-    throw ASTError(who + ' expects ' + what + ' to be a boolean');
+    throw new ASTError(who + ' expects ' + what + ' to be a boolean');
   }
 }
 
 var _check_array = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object Array]') {
-    throw ASTError(who + ' expects ' + what + ' to be a array');
+    throw new ASTError(who + ' expects ' + what + ' to be a array');
   }
 }
 
 var _abstractmethod = function() {
-  throw ASTError('Abstract method called');
+  throw new ASTError('Abstract method called');
 }
 
 // Node is an abstract interface implemented by all the AST nodes defined here.
 // This interface is required by NodeVisitor (ZZZ?) to be able to walk any AST.
 var Node = exports.Node = function() {
-  throw ASTError('Node is an abstract class');
+  throw new ASTError('Node is an abstract class');
 }
 
 Node.prototype.children = _abstractmethod;
@@ -64,7 +64,7 @@ var Case = exports.Case = function(name, type_decl, expr, loc) {
   this.type_decl = type_decl;
 
   if (!(expr instanceof Expression)) {
-    throw ASTError('Case expects expr to be a Expression');
+    throw new ASTError('Case expects expr to be a Expression');
   }
   this.expr = expr;
 
@@ -92,7 +92,7 @@ var Class = exports.Class = function(name, parent, features, filename, loc) {
   _check_array(features);
   for (var i = 0; i < features.length; i++) {
     if (!(features[i] instanceof Feature)) {
-      throw ASTError('Class expects features to be an array of Feature');
+      throw new ASTError('Class expects features to be an array of Feature');
     }
   }
   this.features = features;
@@ -113,8 +113,8 @@ Object.defineProperty(Class.prototype, 'attributes', {
 //
 // Expression is an abstract Node interface
 //
-var Expression = function() {
-  throw ASTError('Expression is an abstract class');
+var Expression = exports.Expression = function() {
+  throw new ASTError('Expression is an abstract class');
 }
 
 Expression.prototype = Object.create(Node.prototype);
@@ -129,7 +129,7 @@ var Assign = exports.Assign = function(name, expr, loc) {
   this.name = name;
 
   if (!(expr instanceof Expression)) {
-    throw ASTError('Assign expects expr to be a Expression');
+    throw new ASTError('Assign expects expr to be a Expression');
   }
   this.expr = expr;
 
@@ -149,7 +149,7 @@ Object.defineProperty(Assign.prototype, 'attributes', {
 //
 var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, actual, loc) {
   if (!(expr instanceof Expression)) {
-    throw ASTError('StaticDispatch expects expr to be a Expression');
+    throw new ASTError('StaticDispatch expects expr to be a Expression');
   }
   this.expr = expr;
 
@@ -160,7 +160,7 @@ var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, ac
   this.name = name;
 
   if (!(actual instanceof Expression)) {
-    throw ASTError('StaticDispatch expects actual to be a Expression');
+    throw new ASTError('StaticDispatch expects actual to be a Expression');
   }
   this.actual = actual;
 
@@ -180,17 +180,17 @@ Object.defineProperty(StaticDispatch.prototype, 'attributes', {
 //
 var Cond = exports.Cond = function(pred, then_exp, else_exp, loc) {
   if (!(pred instanceof Expression)) {
-    throw ASTError('Cond expects pred to be a Expression');
+    throw new ASTError('Cond expects pred to be a Expression');
   }
   this.pred = pred;
 
   if (!(then_exp instanceof Expression)) {
-    throw ASTError('Cond expects then_exp to be a Expression');
+    throw new ASTError('Cond expects then_exp to be a Expression');
   }
   this.then_exp = then_exp;
 
   if (!(else_exp instanceof Expression)) {
-    throw ASTError('Cond expects else_exp to be a Expression');
+    throw new ASTError('Cond expects else_exp to be a Expression');
   }
   this.else_exp = else_exp;
 
@@ -210,12 +210,12 @@ Object.defineProperty(Cond.prototype, 'attributes', {
 //
 var Loop = exports.Loop = function(pred, body, loc) {
   if (!(pred instanceof Expression)) {
-    throw ASTError('Loop expects pred to be a Expression');
+    throw new ASTError('Loop expects pred to be a Expression');
   }
   this.pred = pred;
 
   if (!(body instanceof Expression)) {
-    throw ASTError('Loop expects body to be a Expression');
+    throw new ASTError('Loop expects body to be a Expression');
   }
   this.body = body;
 
@@ -235,14 +235,14 @@ Object.defineProperty(Loop.prototype, 'attributes', {
 //
 var Typcase = exports.Typcase = function(expr, cases, loc) {
   if (!(expr instanceof Expression)) {
-    throw ASTError('Typcase expects expr to be a Expression');
+    throw new ASTError('Typcase expects expr to be a Expression');
   }
   this.expr = expr;
 
   _check_array(cases);
   for (var i = 0; i < cases.length; i++) {
     if (!(cases[i] instanceof Case)) {
-      throw ASTError('Typcase expects cases to be an array of Case');
+      throw new ASTError('Typcase expects cases to be an array of Case');
     }
   }
   this.cases = cases;
@@ -263,7 +263,7 @@ Object.defineProperty(Typcase.prototype, 'attributes', {
 //
 var Block = exports.Block = function(body, loc) {
   if (!(body instanceof Expression)) {
-    throw ASTError('Block expects body to be a Expression');
+    throw new ASTError('Block expects body to be a Expression');
   }
   this.body = body;
 
@@ -289,12 +289,12 @@ var Let = exports.Let = function(id, type_decl, init, body, loc) {
   this.type_decl = type_decl;
 
   if (!(init instanceof Expression)) {
-    throw ASTError('Let expects init to be a Expression');
+    throw new ASTError('Let expects init to be a Expression');
   }
   this.init = init;
 
   if (!(body instanceof Expression)) {
-    throw ASTError('Let expects body to be a Expression');
+    throw new ASTError('Let expects body to be a Expression');
   }
   this.body = body;
 
@@ -317,12 +317,12 @@ var BinaryOp = exports.BinaryOp = function(op, left, right, loc) {
   this.op = op;
 
   if (!(left instanceof Expression)) {
-    throw ASTError('BinaryOp expects left to be a Expression');
+    throw new ASTError('BinaryOp expects left to be a Expression');
   }
   this.left = left;
 
   if (!(right instanceof Expression)) {
-    throw ASTError('BinaryOp expects right to be a Expression');
+    throw new ASTError('BinaryOp expects right to be a Expression');
   }
   this.right = right;
 
@@ -345,7 +345,7 @@ var UnaryOp = exports.UnaryOp = function(op, expr, loc) {
   this.op = op;
 
   if (!(expr instanceof Expression)) {
-    throw ASTError('UnaryOp expects expr to be a Expression');
+    throw new ASTError('UnaryOp expects expr to be a Expression');
   }
   this.expr = expr;
 
@@ -437,7 +437,7 @@ Object.defineProperty(New.prototype, 'attributes', {
 //
 var IsVoid = exports.IsVoid = function(expr, loc) {
   if (!(expr instanceof Expression)) {
-    throw ASTError('IsVoid expects expr to be a Expression');
+    throw new ASTError('IsVoid expects expr to be a Expression');
   }
   this.expr = expr;
 
@@ -487,8 +487,8 @@ Object.defineProperty(Obj.prototype, 'attributes', {
 //
 // Feature is an abstract Node interface
 //
-var Feature = function() {
-  throw ASTError('Feature is an abstract class');
+var Feature = exports.Feature = function() {
+  throw new ASTError('Feature is an abstract class');
 }
 
 Feature.prototype = Object.create(Node.prototype);
@@ -505,7 +505,7 @@ var Method = exports.Method = function(name, formals, return_type, expr, loc) {
   _check_array(formals);
   for (var i = 0; i < formals.length; i++) {
     if (!(formals[i] instanceof Formal)) {
-      throw ASTError('Method expects formals to be an array of Formal');
+      throw new ASTError('Method expects formals to be an array of Formal');
     }
   }
   this.formals = formals;
@@ -514,7 +514,7 @@ var Method = exports.Method = function(name, formals, return_type, expr, loc) {
   this.return_type = return_type;
 
   if (!(expr instanceof Expression)) {
-    throw ASTError('Method expects expr to be a Expression');
+    throw new ASTError('Method expects expr to be a Expression');
   }
   this.expr = expr;
 
@@ -540,7 +540,7 @@ var Attr = exports.Attr = function(name, type_decl, init, loc) {
   this.type_decl = type_decl;
 
   if (!(init instanceof Expression)) {
-    throw ASTError('Attr expects init to be a Expression');
+    throw new ASTError('Attr expects init to be a Expression');
   }
   this.init = init;
 
@@ -583,7 +583,7 @@ var Program = exports.Program = function(classes, loc) {
   _check_array(classes);
   for (var i = 0; i < classes.length; i++) {
     if (!(classes[i] instanceof Class)) {
-      throw ASTError('Program expects classes to be an array of Class');
+      throw new ASTError('Program expects classes to be an array of Class');
     }
   }
   this.classes = classes;

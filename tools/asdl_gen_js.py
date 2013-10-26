@@ -33,30 +33,30 @@ ASTError.prototype.constructor = ASTError;
 // Some helper code used throughout the module
 var _check_string = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object String]') {
-    throw ASTError(who + ' expects ' + what + ' to be a string');
+    throw new ASTError(who + ' expects ' + what + ' to be a string');
   }
 }
 
 var _check_boolean = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object Boolean]') {
-    throw ASTError(who + ' expects ' + what + ' to be a boolean');
+    throw new ASTError(who + ' expects ' + what + ' to be a boolean');
   }
 }
 
 var _check_array = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object Array]') {
-    throw ASTError(who + ' expects ' + what + ' to be a array');
+    throw new ASTError(who + ' expects ' + what + ' to be a array');
   }
 }
 
 var _abstractmethod = function() {
-  throw ASTError('Abstract method called');
+  throw new ASTError('Abstract method called');
 }
 
 // Node is an abstract interface implemented by all the AST nodes defined here.
 // This interface is required by NodeVisitor (ZZZ?) to be able to walk any AST.
 var Node = exports.Node = function() {
-  throw ASTError('Node is an abstract class');
+  throw new ASTError('Node is an abstract class');
 }
 
 Node.prototype.children = _abstractmethod;
@@ -116,7 +116,7 @@ def emit_class(stream, classname, parentname, constructor):
             emit('  for (var i = 0; i < %s.length; i++) {' % field.name)
             emit('    if (!(%s[i] instanceof %s)) {' % (
                 field.name, field.type.capitalize()))
-            emit("      throw ASTError('%s expects %s to be an array of %s');" % (
+            emit("      throw new ASTError('%s expects %s to be an array of %s');" % (
                 classname, field.name, field.type.capitalize()))
             emit('    }')
             emit('  }')
@@ -129,7 +129,7 @@ def emit_class(stream, classname, parentname, constructor):
         else:
             emit('  if (!(%s instanceof %s)) {' % (
                 field.name, field.type.capitalize()))
-            emit("    throw ASTError('%s expects %s to be a %s');" % (
+            emit("    throw new ASTError('%s expects %s to be a %s');" % (
                 classname, field.name, field.type.capitalize()))
             emit('  }')
         emit('  this.%s = %s;' % (field.name, field.name))
@@ -166,8 +166,8 @@ def emit_node_hierarchy(stream, typename, constructors):
     emit('//')
     emit('// %s is an abstract Node interface' % classname)
     emit('//')
-    emit('var %s = function() {' % classname)
-    emit("  throw ASTError('%s is an abstract class');" % classname)
+    emit('var %s = exports.%s = function() {' % (classname, classname))
+    emit("  throw new ASTError('%s is an abstract class');" % classname)
     emit('}')
     emit()
     emit('%s.prototype = Object.create(Node.prototype);' % classname)
