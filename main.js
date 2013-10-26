@@ -8,7 +8,7 @@ var fs = require('fs');
 // for the sub-modules.
 
 if (module.parent === null) {
-  var fileinput = fs.readFileSync('test.cl', 'utf8');
+  var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
   var result = lexer.lex_all(fileinput);
 
   if (result.errors.length >= 1) {
