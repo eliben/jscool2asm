@@ -1,3 +1,5 @@
+// Unit tests for the COOL lexer
+
 'use strict';
 
 var assert = require('assert');
@@ -112,4 +114,3 @@ var test = function() {
 if (module.parent === null) {
   test();
 }
-

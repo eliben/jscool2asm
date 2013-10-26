@@ -10,7 +10,7 @@
 'use strict';
 
 // ASTError is the exception type used by this module to signal errors
-function ASTError(message) {
+var ASTError = exports.ASTError = function(message) {
   this.message = message;
 }
 
@@ -19,19 +19,19 @@ ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
 var _check_string = function(v, who, what) {
-  if (Object.prototype.toString.call(myvar) !== '[object String]') {
+  if (Object.prototype.toString.call(v) !== '[object String]') {
     throw ASTError(who + ' expects ' + what + ' to be a string');
   }
 }
 
 var _check_boolean = function(v, who, what) {
-  if (Object.prototype.toString.call(myvar) !== '[object Boolean]') {
+  if (Object.prototype.toString.call(v) !== '[object Boolean]') {
     throw ASTError(who + ' expects ' + what + ' to be a boolean');
   }
 }
 
 var _check_array = function(v, who, what) {
-  if (Object.prototype.toString.call(myvar) !== '[object Array]') {
+  if (Object.prototype.toString.call(v) !== '[object Array]') {
     throw ASTError(who + ' expects ' + what + ' to be a array');
   }
 }
@@ -42,7 +42,7 @@ var _abstractmethod = function() {
 
 // Node is an abstract interface implemented by all the AST nodes defined here.
 // This interface is required by NodeVisitor (ZZZ?) to be able to walk any AST.
-var Node = function() {
+var Node = exports.Node = function() {
   throw ASTError('Node is an abstract class');
 }
 
@@ -56,7 +56,7 @@ Node.prototype.children = _abstractmethod;
 // Case is-a Node
 // Constructor(Case, [Field(identifier, name), Field(identifier, type_decl), Field(expression, expr)])
 //
-var Case = function(name, type_decl, expr, loc) {
+var Case = exports.Case = function(name, type_decl, expr, loc) {
   _check_string(name);
   this.name = name;
 
@@ -82,7 +82,7 @@ Object.defineProperty(Case.prototype, 'attributes', {
 // Class is-a Node
 // Constructor(Class, [Field(identifier, name), Field(identifier, parent), Field(feature, features, seq=True), Field(identifier, filename)])
 //
-var Class = function(name, parent, features, filename, loc) {
+var Class = exports.Class = function(name, parent, features, filename, loc) {
   _check_string(name);
   this.name = name;
 
@@ -124,7 +124,7 @@ Expression.prototype.constructor = Expression
 // Assign is-a Expression
 // Constructor(Assign, [Field(identifier, name), Field(expression, expr)])
 //
-var Assign = function(name, expr, loc) {
+var Assign = exports.Assign = function(name, expr, loc) {
   _check_string(name);
   this.name = name;
 
@@ -147,7 +147,7 @@ Object.defineProperty(Assign.prototype, 'attributes', {
 // StaticDispatch is-a Expression
 // Constructor(StaticDispatch, [Field(expression, expr), Field(identifier, type_name), Field(identifier, name), Field(expression, actual)])
 //
-var StaticDispatch = function(expr, type_name, name, actual, loc) {
+var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, actual, loc) {
   if (!(expr instanceof Expression)) {
     throw ASTError('StaticDispatch expects expr to be a Expression');
   }
@@ -178,7 +178,7 @@ Object.defineProperty(StaticDispatch.prototype, 'attributes', {
 // Cond is-a Expression
 // Constructor(Cond, [Field(expression, pred), Field(expression, then_exp), Field(expression, else_exp)])
 //
-var Cond = function(pred, then_exp, else_exp, loc) {
+var Cond = exports.Cond = function(pred, then_exp, else_exp, loc) {
   if (!(pred instanceof Expression)) {
     throw ASTError('Cond expects pred to be a Expression');
   }
@@ -208,7 +208,7 @@ Object.defineProperty(Cond.prototype, 'attributes', {
 // Loop is-a Expression
 // Constructor(Loop, [Field(expression, pred), Field(expression, body)])
 //
-var Loop = function(pred, body, loc) {
+var Loop = exports.Loop = function(pred, body, loc) {
   if (!(pred instanceof Expression)) {
     throw ASTError('Loop expects pred to be a Expression');
   }
@@ -233,7 +233,7 @@ Object.defineProperty(Loop.prototype, 'attributes', {
 // Typcase is-a Expression
 // Constructor(Typcase, [Field(expression, expr), Field(case, cases, seq=True)])
 //
-var Typcase = function(expr, cases, loc) {
+var Typcase = exports.Typcase = function(expr, cases, loc) {
   if (!(expr instanceof Expression)) {
     throw ASTError('Typcase expects expr to be a Expression');
   }
@@ -261,7 +261,7 @@ Object.defineProperty(Typcase.prototype, 'attributes', {
 // Block is-a Expression
 // Constructor(Block, [Field(expression, body)])
 //
-var Block = function(body, loc) {
+var Block = exports.Block = function(body, loc) {
   if (!(body instanceof Expression)) {
     throw ASTError('Block expects body to be a Expression');
   }
@@ -281,7 +281,7 @@ Object.defineProperty(Block.prototype, 'attributes', {
 // Let is-a Expression
 // Constructor(Let, [Field(identifier, id), Field(identifier, type_decl), Field(expression, init), Field(expression, body)])
 //
-var Let = function(id, type_decl, init, body, loc) {
+var Let = exports.Let = function(id, type_decl, init, body, loc) {
   _check_string(id);
   this.id = id;
 
@@ -312,7 +312,7 @@ Object.defineProperty(Let.prototype, 'attributes', {
 // BinaryOp is-a Expression
 // Constructor(BinaryOp, [Field(identifier, op), Field(expression, left), Field(expression, right)])
 //
-var BinaryOp = function(op, left, right, loc) {
+var BinaryOp = exports.BinaryOp = function(op, left, right, loc) {
   _check_string(op);
   this.op = op;
 
@@ -340,7 +340,7 @@ Object.defineProperty(BinaryOp.prototype, 'attributes', {
 // UnaryOp is-a Expression
 // Constructor(UnaryOp, [Field(identifier, op), Field(expression, expr)])
 //
-var UnaryOp = function(op, expr, loc) {
+var UnaryOp = exports.UnaryOp = function(op, expr, loc) {
   _check_string(op);
   this.op = op;
 
@@ -363,7 +363,7 @@ Object.defineProperty(UnaryOp.prototype, 'attributes', {
 // IntConst is-a Expression
 // Constructor(IntConst, [Field(identifier, token)])
 //
-var IntConst = function(token, loc) {
+var IntConst = exports.IntConst = function(token, loc) {
   _check_string(token);
   this.token = token;
 
@@ -381,7 +381,7 @@ Object.defineProperty(IntConst.prototype, 'attributes', {
 // BoolConst is-a Expression
 // Constructor(BoolConst, [Field(boolean, value)])
 //
-var BoolConst = function(value, loc) {
+var BoolConst = exports.BoolConst = function(value, loc) {
   _check_boolean(value);
   this.value = value;
 
@@ -399,7 +399,7 @@ Object.defineProperty(BoolConst.prototype, 'attributes', {
 // StringConst is-a Expression
 // Constructor(StringConst, [Field(identifier, token)])
 //
-var StringConst = function(token, loc) {
+var StringConst = exports.StringConst = function(token, loc) {
   _check_string(token);
   this.token = token;
 
@@ -417,7 +417,7 @@ Object.defineProperty(StringConst.prototype, 'attributes', {
 // New is-a Expression
 // Constructor(New, [Field(identifier, type_name)])
 //
-var New = function(type_name, loc) {
+var New = exports.New = function(type_name, loc) {
   _check_string(type_name);
   this.type_name = type_name;
 
@@ -435,7 +435,7 @@ Object.defineProperty(New.prototype, 'attributes', {
 // IsVoid is-a Expression
 // Constructor(IsVoid, [Field(expression, expr)])
 //
-var IsVoid = function(expr, loc) {
+var IsVoid = exports.IsVoid = function(expr, loc) {
   if (!(expr instanceof Expression)) {
     throw ASTError('IsVoid expects expr to be a Expression');
   }
@@ -455,7 +455,7 @@ Object.defineProperty(IsVoid.prototype, 'attributes', {
 // NoExpr is-a Expression
 // Constructor(NoExpr, [])
 //
-var NoExpr = function(loc) {
+var NoExpr = exports.NoExpr = function(loc) {
   this.loc = loc;
 }
 
@@ -470,7 +470,7 @@ Object.defineProperty(NoExpr.prototype, 'attributes', {
 // Obj is-a Expression
 // Constructor(Obj, [Field(identifier, name)])
 //
-var Obj = function(name, loc) {
+var Obj = exports.Obj = function(name, loc) {
   _check_string(name);
   this.name = name;
 
@@ -498,7 +498,7 @@ Feature.prototype.constructor = Feature
 // Method is-a Feature
 // Constructor(Method, [Field(identifier, name), Field(formal, formals, seq=True), Field(identifier, return_type), Field(expression, expr)])
 //
-var Method = function(name, formals, return_type, expr, loc) {
+var Method = exports.Method = function(name, formals, return_type, expr, loc) {
   _check_string(name);
   this.name = name;
 
@@ -532,7 +532,7 @@ Object.defineProperty(Method.prototype, 'attributes', {
 // Attr is-a Feature
 // Constructor(Attr, [Field(identifier, name), Field(identifier, type_decl), Field(expression, init)])
 //
-var Attr = function(name, type_decl, init, loc) {
+var Attr = exports.Attr = function(name, type_decl, init, loc) {
   _check_string(name);
   this.name = name;
 
@@ -558,7 +558,7 @@ Object.defineProperty(Attr.prototype, 'attributes', {
 // Formal is-a Node
 // Constructor(Formal, [Field(identifier, name), Field(identifier, type_decl)])
 //
-var Formal = function(name, type_decl, loc) {
+var Formal = exports.Formal = function(name, type_decl, loc) {
   _check_string(name);
   this.name = name;
 
@@ -579,7 +579,7 @@ Object.defineProperty(Formal.prototype, 'attributes', {
 // Program is-a Node
 // Constructor(Program, [Field(class, classes, seq=True)])
 //
-var Program = function(classes, loc) {
+var Program = exports.Program = function(classes, loc) {
   _check_array(classes);
   for (var i = 0; i < classes.length; i++) {
     if (!(classes[i] instanceof Class)) {

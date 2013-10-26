@@ -23,7 +23,7 @@ CODE_PREFACE = r'''
 'use strict';
 
 // ASTError is the exception type used by this module to signal errors
-function ASTError(message) {
+var ASTError = exports.ASTError = function(message) {
   this.message = message;
 }
 
@@ -32,19 +32,19 @@ ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
 var _check_string = function(v, who, what) {
-  if (Object.prototype.toString.call(myvar) !== '[object String]') {
+  if (Object.prototype.toString.call(v) !== '[object String]') {
     throw ASTError(who + ' expects ' + what + ' to be a string');
   }
 }
 
 var _check_boolean = function(v, who, what) {
-  if (Object.prototype.toString.call(myvar) !== '[object Boolean]') {
+  if (Object.prototype.toString.call(v) !== '[object Boolean]') {
     throw ASTError(who + ' expects ' + what + ' to be a boolean');
   }
 }
 
 var _check_array = function(v, who, what) {
-  if (Object.prototype.toString.call(myvar) !== '[object Array]') {
+  if (Object.prototype.toString.call(v) !== '[object Array]') {
     throw ASTError(who + ' expects ' + what + ' to be a array');
   }
 }
@@ -55,7 +55,7 @@ var _abstractmethod = function() {
 
 // Node is an abstract interface implemented by all the AST nodes defined here.
 // This interface is required by NodeVisitor (ZZZ?) to be able to walk any AST.
-var Node = function() {
+var Node = exports.Node = function() {
   throw ASTError('Node is an abstract class');
 }
 
@@ -103,7 +103,8 @@ def emit_class(stream, classname, parentname, constructor):
     emit('// %s' % str(constructor))
     emit('//')
     argnames = [field.name for field in constructor.fields] + ['loc']
-    emit('var %s = function(%s) {' % (classname, ', '.join(argnames)))
+    emit('var %s = exports.%s = function(%s) {' % (
+        classname, classname, ', '.join(argnames)))
 
     # Names of fields that are attributes (non-Nodes)
     attrs = []
