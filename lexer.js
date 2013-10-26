@@ -24,7 +24,7 @@
 //
 // Keywords:
 //  CLASS, ELSE, FI, IF, IN, INHERITS, LET, LOOP, POOL, THEN, WHILE, CASE, ESAC,
-//  OF, NEW, ISVOID, NOT, LET
+//  OF, NEW, ISVOID, NOT, LET, TRUE, FALSE
 //
 // Comments and whitespace are skipped by the lexer - not reported as tokens.
 // Strings may contain newlines escaped with '\'.
@@ -62,7 +62,7 @@ var Lexer = exports.Lexer = function() {
   // Maps lowercase keyword to an uppercase token name.
   var keywords = ['class', 'else', 'fi', 'if', 'in', 'inherits', 'let',
                   'loop', 'pool', 'then', 'while', 'case', 'esac', 'of', 'new',
-                  'isvoid', 'not', 'let'];
+                  'isvoid', 'not', 'let', 'true', 'false'];
 
   this.keywordtable = {};
   for (var i = 0; i < keywords.length; i++) {
