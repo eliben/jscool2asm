@@ -30,6 +30,6 @@ module COOL
                | New(identifier type_name)
                | IsVoid(expression expr)
                | NoExpr
-               | Object(identifier name)
+               | Obj(identifier name)
 }
 

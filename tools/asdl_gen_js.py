@@ -48,6 +48,7 @@ Node.prototype.children = _abstractmethod;
 //
 //-------------------- AST nodes --------------------
 //
+
 '''
 
 def die(msg):
@@ -57,7 +58,7 @@ def die(msg):
 
 def emit_ast(stream, ast):
     stream.write(CODE_PREFACE)
-    for typename, sum in ast.types.items():
+    for typename, sum in sorted(ast.types.items()):
         emit_ast_type(stream, typename, sum)
 
 
@@ -76,8 +77,6 @@ def emit_ast_type(stream, typename, sum):
         emit_node_hierarchy(stream, typename, sum.types)
     else:
         die('ERROR in %s, no constructors in Sum' % typename)
-    print(type(sum.types))
-    pprint.pprint(sum.types)
 
 
 def emit_class(stream, classname, parentname, constructor):
@@ -100,7 +99,7 @@ def emit_class(stream, classname, parentname, constructor):
             emit('  for (var i = 0; i < %s.length; i++) {' % field.name)
             emit('    if (!(%s[i] instanceof %s)) {' % (
                 field.name, field.type.capitalize()))
-            emit('      throw ASTError(%s expects %s to be an array of %s' % (
+            emit("      throw ASTError('%s expects %s to be an array of %s');" % (
                 classname, field.name, field.type.capitalize()))
             emit('    }')
             emit('  }')
@@ -113,7 +112,7 @@ def emit_class(stream, classname, parentname, constructor):
         else:
             emit('  if (!(%s instanceof %s)) {' % (
                 field.name, field.type.capitalize()))
-            emit('    throw ASTError(%s expects %s to be a %s' % (
+            emit("    throw ASTError('%s expects %s to be a %s');" % (
                 classname, field.name, field.type.capitalize()))
             emit('  }')
         emit('  this.%s = %s;' % (field.name, field.name))
@@ -121,16 +120,17 @@ def emit_class(stream, classname, parentname, constructor):
     emit('  this.loc = loc;')
     emit('}')
     emit()
-    
+
     emit('%s.prototype = Object.create(%s.prototype);' % (
         classname, parentname))
-    emit('%s.prototype.constructor = %s' % (classname, classname))
+    emit('%s.prototype.constructor = %s;' % (classname, classname))
     emit()
 
     emit("Object.defineProperty(%s.prototype, 'attributes', {" % classname)
     emit("  get: function() {return %s;}" % attrs)
     emit("});")
     emit()
+
 
 def emit_single_node(stream, typename, constructor):
     if typename.lower() != constructor.name.lower():
@@ -141,7 +141,24 @@ def emit_single_node(stream, typename, constructor):
 
 
 def emit_node_hierarchy(stream, typename, constructors):
-    print('hierarchical')
+    def emit(s=''):
+        stream.write((s or '') + '\n')
+    # Create the node for typename as the abstract base class for this
+    # hierarchy, and then emit each constructor with this class as a parent.
+    classname = typename.capitalize()
+    emit('//')
+    emit('// %s is an abstract Node interface' % classname)
+    emit('//')
+    emit('var %s = function() {' % classname)
+    emit("  throw ASTError('%s is an abstract class');" % classname)
+    emit('}')
+    emit()
+    emit('%s.prototype = Object.create(Node.prototype);' % classname)
+    emit('%s.prototype.constructor = %s' % (classname, classname))
+    emit()
+
+    for constructor in constructors:
+        emit_class(stream, constructor.name, classname, constructor)
 
 
 def main():
