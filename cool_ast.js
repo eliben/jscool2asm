@@ -1,3 +1,12 @@
+//------------------------------------------------------------------------------
+// AST for COOL.
+// NOTE: this code is auto-generated from the ASDL definition of the AST. Do
+//       not edit it directly.
+//
+// Eli Bendersky (eliben@gmail.com)
+// This code is in the public domain
+//------------------------------------------------------------------------------
+
 'use strict';
 
 // ASTError is the exception type used by this module to signal errors
