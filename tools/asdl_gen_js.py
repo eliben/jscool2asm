@@ -1,3 +1,9 @@
+#-------------------------------------------------------------------------------
+# Generator of JavaScript AST-definition code from ASDL.
+#
+# Eli Bendersky (eliben@gmail.com)
+# This code is in the public domain
+#-------------------------------------------------------------------------------
 import pprint
 import sys
 

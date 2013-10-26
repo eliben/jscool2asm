@@ -1,3 +1,9 @@
+--------------------------------------------------------------------------------
+-- ASDL definition file for COOL's AST nodes.
+--
+-- Eli Bendersky (eliben@gmail.com)
+-- This code is in the public domain
+--------------------------------------------------------------------------------
 module COOL
 {
     program = Program(class* classes)
