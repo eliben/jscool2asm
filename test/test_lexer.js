@@ -1,4 +1,4 @@
-// Unit tests for the COOL lexer
+// Unit tests for the Cool lexer
 
 'use strict';
 

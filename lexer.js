@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
-// Lexer for COOL.
+// Lexer for Cool.
 //
-// Splits a buffer of COOL source code into a stream of tokens.
+// Splits a buffer of Cool source code into a stream of tokens.
 //
 // Eli Bendersky (eliben@gmail.com)
 // This code is in the public domain

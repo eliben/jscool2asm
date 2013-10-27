@@ -12,7 +12,7 @@ import asdl_parser
 
 CODE_PREFACE = r'''
 //------------------------------------------------------------------------------
-// AST for COOL.
+// AST for Cool.
 // NOTE: this code is auto-generated from the ASDL definition of the AST. Do
 //       not edit it directly.
 //
