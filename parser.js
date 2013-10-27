@@ -37,4 +37,7 @@
 //               |   ~ expr | NOT expr
 //               |   ( expr )
 //               |   ID | NUMBER | STRING | TRUE | FALSE
+//
+// Operator precedence, from highest to lowest:
+//   .  @  ~  isvoid  *  /  +  -  <=  <  =  not  <-
 
