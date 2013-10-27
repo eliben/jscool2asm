@@ -12,6 +12,7 @@
 // Keywords and tokens are in uppercase. Operators stand for themselves. [ and ]
 // are used for "optional", followed by * for "zero or more", followed by + for
 // "one or more".
+// The grammar was rewritten a bit to aid expression parsing.
 //
 // program       ::= [class ;]+
 //
@@ -23,7 +24,7 @@
 // formal        ::= ID : TYPE
 //
 // expr          ::= ID <- expr
-//               |   expr [@ TYPE] . ID ( [expr [, expr]∗] )
+//               |   atom [@ TYPE] . ID ( [expr [, expr]∗] )
 //               |   ID ( [expr [, expr]*] )
 //               |   IF expr THEN expr ELSE expr FI
 //               |   WHILE expr LOOP expr POOL
@@ -37,6 +38,8 @@
 //               |   ~ expr | NOT expr
 //               |   ( expr )
 //               |   ID | NUMBER | STRING | TRUE | FALSE
+//
+// atom          ::= ID | ( expr )
 //
 // Operator precedence, from highest to lowest:
 //   .  @  ~  isvoid  *  /  +  -  <=  <  =  not  <-
@@ -58,6 +61,15 @@ ParseError.prototype.constructor = ParseError;
 var Parser = exports.Parser = function() {
   this.lexer = null;
   this.cur_token = null;
+
+  this._keyword_expr_dispatch = {
+    'IF':     this._parse_if_expr,
+    'WHILE':  this._parse_while_expr,
+    'ISVOID': this._parse_isvoid_expr,
+    'NEW':    this._parse_new_expr,
+    'LET':    this._parse_let_expr,
+    'CASE':   this._parse_case_expr
+  };
 }
 
 // Parses Cool source code contained in buf and returns the full AST (Program
@@ -82,5 +94,43 @@ Parser.prototype._advance = function() {
 Parser.prototype._parse_program = function() {
   // Class nodes will be collected here
   var classes = [];
+
+}
+
+// Parse an expression. This is a precedence-climbing parser, working in tandem
+// with _parse_atom.
+// min_prec: The minimal precedence upcoming binary operators should have to
+// be incorporated into this expression. If a lower-precedence operator is
+// encountered, this method will return the node it has built so far. The same
+// occurs if an expression-ending token is encountered.
+Parser.prototype._parse_expression = function(min_prec) {
+
+}
+
+Parser.prototype._parse_atom = function() {
+  
+}
+
+Parser.prototype._parse_if_expr = function() {
+  
+}
+
+Parser.prototype._parse_while_expr = function() {
+  
+}
+
+Parser.prototype._parse_isvoid_expr = function() {
+  
+}
+
+Parser.prototype._parse_new_expr = function() {
+  
+}
+
+Parser.prototype._parse_let_expr = function() {
+  
+}
+
+Parser.prototype._parse_case_expr = function() {
   
 }
