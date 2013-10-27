@@ -1,3 +1,5 @@
+* Need a way to dump ASTs - first Node Visitor use? Node visitor should be
+  just written directly, not auto-generated?
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 

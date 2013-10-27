@@ -14,7 +14,7 @@ var ASTError = exports.ASTError = function(message) {
   this.message = message;
 }
 
-ASTError.prototype = new Error();
+ASTError.prototype = Object.create(Error.prototype);
 ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
