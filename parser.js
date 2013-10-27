@@ -13,7 +13,7 @@
 // are used for "optional", followed by * for "zero or more", followed by + for
 // "one or more".
 //
-// program       ::= [class;]+
+// program       ::= [class ;]+
 //
 // class         ::= CLASS TYPE [INHERITS TYPE] { [feature ;]∗ }
 //
@@ -77,4 +77,10 @@ Parser.prototype._advance = function() {
   }
   this.cur_token = next;
   return cur;
+}
+
+Parser.prototype._parse_program = function() {
+  // Class nodes will be collected here
+  var classes = [];
+  
 }

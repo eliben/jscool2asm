@@ -1,6 +1,8 @@
 --------------------------------------------------------------------------------
 -- ASDL definition file for COOL's AST nodes.
 --
+-- Taken from cool-tree.aps in the assignment code.
+--
 -- Eli Bendersky (eliben@gmail.com)
 -- This code is in the public domain
 --------------------------------------------------------------------------------
@@ -21,11 +23,12 @@ module COOL
 
     expression = Assign(identifier name, expression expr)
                | StaticDispatch(expression expr, identifier type_name,
-                                identifier name, expression actual)
+                                identifier name, expression* actual)
+               | Dispatch(expression expr, identifier name, expression* actual)
                | Cond(expression pred, expression then_exp, expression else_exp)
                | Loop(expression pred, expression body)
                | Typcase(expression expr, case* cases)
-               | Block(expression body)
+               | Block(expression* body)
                | Let(identifier id, identifier type_decl,
                      expression init, expression body)
                | BinaryOp(identifier op, expression left, expression right)

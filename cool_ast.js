@@ -14,7 +14,7 @@ var ASTError = exports.ASTError = function(message) {
   this.message = message;
 }
 
-ASTError.prototype = Object.create(Error.prototype);
+ASTError.prototype = new Error();
 ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
@@ -145,7 +145,7 @@ Object.defineProperty(Assign.prototype, 'attributes', {
 
 //
 // StaticDispatch is-a Expression
-// Constructor(StaticDispatch, [Field(expression, expr), Field(identifier, type_name), Field(identifier, name), Field(expression, actual)])
+// Constructor(StaticDispatch, [Field(expression, expr), Field(identifier, type_name), Field(identifier, name), Field(expression, actual, seq=True)])
 //
 var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, actual, loc) {
   if (!(expr instanceof Expression)) {
@@ -159,8 +159,11 @@ var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, ac
   _check_string(name);
   this.name = name;
 
-  if (!(actual instanceof Expression)) {
-    throw new ASTError('StaticDispatch expects actual to be a Expression');
+  _check_array(actual);
+  for (var i = 0; i < actual.length; i++) {
+    if (!(actual[i] instanceof Expression)) {
+      throw new ASTError('StaticDispatch expects actual to be an array of Expression');
+    }
   }
   this.actual = actual;
 
@@ -172,6 +175,37 @@ StaticDispatch.prototype.constructor = StaticDispatch;
 
 Object.defineProperty(StaticDispatch.prototype, 'attributes', {
   get: function() {return ['type_name', 'name'];}
+});
+
+//
+// Dispatch is-a Expression
+// Constructor(Dispatch, [Field(expression, expr), Field(identifier, name), Field(expression, actual, seq=True)])
+//
+var Dispatch = exports.Dispatch = function(expr, name, actual, loc) {
+  if (!(expr instanceof Expression)) {
+    throw new ASTError('Dispatch expects expr to be a Expression');
+  }
+  this.expr = expr;
+
+  _check_string(name);
+  this.name = name;
+
+  _check_array(actual);
+  for (var i = 0; i < actual.length; i++) {
+    if (!(actual[i] instanceof Expression)) {
+      throw new ASTError('Dispatch expects actual to be an array of Expression');
+    }
+  }
+  this.actual = actual;
+
+  this.loc = loc;
+}
+
+Dispatch.prototype = Object.create(Expression.prototype);
+Dispatch.prototype.constructor = Dispatch;
+
+Object.defineProperty(Dispatch.prototype, 'attributes', {
+  get: function() {return ['name'];}
 });
 
 //
@@ -259,11 +293,14 @@ Object.defineProperty(Typcase.prototype, 'attributes', {
 
 //
 // Block is-a Expression
-// Constructor(Block, [Field(expression, body)])
+// Constructor(Block, [Field(expression, body, seq=True)])
 //
 var Block = exports.Block = function(body, loc) {
-  if (!(body instanceof Expression)) {
-    throw new ASTError('Block expects body to be a Expression');
+  _check_array(body);
+  for (var i = 0; i < body.length; i++) {
+    if (!(body[i] instanceof Expression)) {
+      throw new ASTError('Block expects body to be an array of Expression');
+    }
   }
   this.body = body;
 
