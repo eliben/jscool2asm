@@ -72,6 +72,22 @@ var Parser = exports.Parser = function() {
   };
 }
 
+Parser._operator_precedence = {
+  'DOT':          200,
+  'AT':           190,
+  'TILDE':        180,
+  'ISVOID':       170,
+  'MULTIPLY':     160,
+  'DIVIDE':       150,
+  'PLUS':         140,
+  'MINUS':        130,
+  'LEQ':          120,
+  'LE':           110,
+  'EQ':           100,
+  'NOT':          90,
+  'ASSIGN_ARROW': 80
+}
+
 // Parses Cool source code contained in buf and returns the full AST (Program
 // node). In case of an error, throws a ParseError.
 Parser.prototype.parse = function(buf) {
@@ -91,10 +107,24 @@ Parser.prototype._advance = function() {
   return cur;
 }
 
+// Verify that the current token is tokname, throw error otherwise.
+// If all is good, return the current token and read the next one into
+// this.cur_token
+Parser.prototype._match = function(tokname) {
+  if (this.cur_token.name === tokname) {
+    return this._advance();
+  } else {
+    throw new ParseError("Line " + this.cur_token.lineno + ": expected '" +
+                         tokname + "', got '" + this.cur_token.name + "'");
+  }
+}
+
 Parser.prototype._parse_program = function() {
   // Class nodes will be collected here
   var classes = [];
 
+  // TODO: hah
+  return this._parse_expression(-1);
 }
 
 // Parse an expression. This is a precedence-climbing parser, working in tandem
@@ -104,33 +134,36 @@ Parser.prototype._parse_program = function() {
 // encountered, this method will return the node it has built so far. The same
 // occurs if an expression-ending token is encountered.
 Parser.prototype._parse_expression = function(min_prec) {
-
+  var keyword_expr_handler = this._keyword_expr_dispatch[this.cur_token.name];
+  if (op !== undefined) {
+    return keyword_expr_handler()
+  }
 }
 
 Parser.prototype._parse_atom = function() {
-  
+
 }
 
 Parser.prototype._parse_if_expr = function() {
-  
+
 }
 
 Parser.prototype._parse_while_expr = function() {
-  
+
 }
 
 Parser.prototype._parse_isvoid_expr = function() {
-  
+
 }
 
 Parser.prototype._parse_new_expr = function() {
-  
+
 }
 
 Parser.prototype._parse_let_expr = function() {
-  
+
 }
 
 Parser.prototype._parse_case_expr = function() {
-  
+
 }
