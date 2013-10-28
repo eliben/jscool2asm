@@ -32,8 +32,14 @@ ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
 var _check_string = function(v, who, what) {
-  if (Object.prototype.toString.call(v) !== '[object String]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a string');
+  if (Object.prototype.toString.call(v) !== '[object string]') {
+    throw new asterror(who + ' expects ' + what + ' to be a string');
+  }
+}
+
+var _check_number = function(v, who, what) {
+  if (Object.prototype.toString.call(v) !== '[object Number]') {
+    throw new asterror(who + ' expects ' + what + ' to be a number');
   }
 }
 
@@ -125,6 +131,9 @@ def emit_class(stream, classname, parentname, constructor):
             attrs.append(field.name)
         elif field.type == 'boolean':
             emit('  _check_boolean(%s);' % field.name)
+            attrs.append(field.name)
+        elif field.type == 'int':
+            emit('  _check_number(%s);' % field.name)
             attrs.append(field.name)
         else:
             emit('  if (!(%s instanceof %s)) {' % (

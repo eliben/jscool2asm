@@ -11,7 +11,7 @@ var fs = require('fs');
 if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
-  var fileinput = '$$';
+  var fileinput = '20';
 
   //var result = lexer.lex_all(fileinput);
 
@@ -24,17 +24,18 @@ if (module.parent === null) {
   //for (var i = 0; i < result.tokens.length; i++) {
     //console.log(result.tokens[i]);
   //};
-  try {
+  //try {
     var prsr = new parser.Parser();
     var ast = prsr.parse(fileinput);
-  } catch (e) {
-    if (e instanceof parser.ParseError) {
-      console.log('Caught ParseError');
-      console.log(e.message);
-    } else {
-      console.log('Caught some other exception');
-      console.log(e);
-    }
-  }
+    console.log(ast);
+  //} catch (e) {
+    //if (e instanceof parser.ParseError) {
+      //console.log('Caught ParseError');
+      //console.log(e.message);
+    //} else {
+      //console.log('Caught some other exception');
+      //console.log(e);
+    //}
+  //}
 }
 

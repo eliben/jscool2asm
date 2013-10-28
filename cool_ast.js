@@ -19,8 +19,14 @@ ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
 var _check_string = function(v, who, what) {
-  if (Object.prototype.toString.call(v) !== '[object String]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a string');
+  if (Object.prototype.toString.call(v) !== '[object string]') {
+    throw new asterror(who + ' expects ' + what + ' to be a string');
+  }
+}
+
+var _check_number = function(v, who, what) {
+  if (Object.prototype.toString.call(v) !== '[object Number]') {
+    throw new asterror(who + ' expects ' + what + ' to be a number');
   }
 }
 
@@ -398,10 +404,10 @@ Object.defineProperty(UnaryOp.prototype, 'attributes', {
 
 //
 // IntConst is-a Expression
-// Constructor(IntConst, [Field(identifier, token)])
+// Constructor(IntConst, [Field(int, token)])
 //
 var IntConst = exports.IntConst = function(token, loc) {
-  _check_string(token);
+  _check_number(token);
   this.token = token;
 
   this.loc = loc;
@@ -434,11 +440,13 @@ Object.defineProperty(BoolConst.prototype, 'attributes', {
 
 //
 // StringConst is-a Expression
-// Constructor(StringConst, [Field(identifier, token)])
+// Constructor(StringConst, [Field(string, str)])
 //
-var StringConst = exports.StringConst = function(token, loc) {
-  _check_string(token);
-  this.token = token;
+var StringConst = exports.StringConst = function(str, loc) {
+  if (!(str instanceof String)) {
+    throw new ASTError('StringConst expects str to be a String');
+  }
+  this.str = str;
 
   this.loc = loc;
 }
@@ -447,7 +455,7 @@ StringConst.prototype = Object.create(Expression.prototype);
 StringConst.prototype.constructor = StringConst;
 
 Object.defineProperty(StringConst.prototype, 'attributes', {
-  get: function() {return ['token'];}
+  get: function() {return [];}
 });
 
 //

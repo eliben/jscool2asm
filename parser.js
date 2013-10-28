@@ -62,13 +62,19 @@ var Parser = exports.Parser = function() {
   this.lexer = null;
   this.cur_token = null;
 
-  this._keyword_expr_dispatch = {
-    'IF':     this._parse_if_expr,
-    'WHILE':  this._parse_while_expr,
-    'ISVOID': this._parse_isvoid_expr,
-    'NEW':    this._parse_new_expr,
-    'LET':    this._parse_let_expr,
-    'CASE':   this._parse_case_expr
+  // Dispatch table for handling expressions starting with a known token. Note
+  // that the functions in this table are unbound, so they have to be called
+  // with .call/.apply and provided 'this'.
+  this._token_expr_dispatch = {
+    'L_BRACE':  this._parse_expr_block,
+    'L_PAREN':  this._parse_parenthesized_expr,
+    'IF':       this._parse_if_expr,
+    'WHILE':    this._parse_while_expr,
+    'ISVOID':   this._parse_isvoid_expr,
+    'NOT':      this._parse_not_expr,
+    'NEW':      this._parse_new_expr,
+    'LET':      this._parse_let_expr,
+    'CASE':     this._parse_case_expr
   };
 }
 
@@ -94,6 +100,8 @@ Parser.prototype.parse = function(buf) {
   this.lexer = new lexer.Lexer();
   this.lexer.input(buf);
   this._advance();
+
+  return this._parse_program();
 }
 
 // Return the current token and read the next one into this.cur_token
@@ -134,13 +142,42 @@ Parser.prototype._parse_program = function() {
 // encountered, this method will return the node it has built so far. The same
 // occurs if an expression-ending token is encountered.
 Parser.prototype._parse_expression = function(min_prec) {
-  var keyword_expr_handler = this._keyword_expr_dispatch[this.cur_token.name];
-  if (op !== undefined) {
-    return keyword_expr_handler()
-  }
+  // Parse until the next binary operator
+  var atom_node = this._parse_atom();
+
+  // TODO: zz
+  return atom_node;
 }
 
+// An "atom" is any part of an expression between binary operators. So it can
+// be a paren-enclosed expression, a unary operator followed by an expression or
+// keyword-starting expressions like 'if...fi', etc.
 Parser.prototype._parse_atom = function() {
+  var tok = this.cur_token;
+  var token_expr_handler = this._token_expr_dispatch[tok.name];
+  if (token_expr_handler !== undefined) {
+    return token_expr_handler.call(this)
+  }
+  // It's not starting with one of the known tokens. So the next token must be
+  // a valid ID or constant.
+  if (tok.name === 'IDENTIFIER') {
+  } else if (tok.name === 'NUMBER') {
+    return new cool_ast.IntConst(parseInt(tok.value, 10), tok.lineno);
+  } else if (tok.name === 'STRING') {
+    return new cool_ast.StringConst(tok.value, tok.lineno);
+  } else if (tok.name === 'TRUE') {
+    return new cool_ast.BoolConst(true, tok.lineno);
+  } else if (tok.name === 'FALSE') {
+    return new cool_ast.BoolConst(false, tok.lineno);
+  }
+  return null;
+}
+
+Parser.prototype._parse_expr_block = function() {
+
+}
+
+Parser.prototype._parse_parenthesized_expr = function() {
 
 }
 
@@ -153,6 +190,10 @@ Parser.prototype._parse_while_expr = function() {
 }
 
 Parser.prototype._parse_isvoid_expr = function() {
+
+}
+
+Parser.prototype._parse_not_expr = function() {
 
 }
 

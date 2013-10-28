@@ -33,9 +33,9 @@ module COOL
                      expression init, expression body)
                | BinaryOp(identifier op, expression left, expression right)
                | UnaryOp(identifier op, expression expr)
-               | IntConst(identifier token)
+               | IntConst(int token)
                | BoolConst(boolean value)
-               | StringConst(identifier token)
+               | StringConst(string str)
                | New(identifier type_name)
                | IsVoid(expression expr)
                | NoExpr
