@@ -31,15 +31,22 @@ ASTError.prototype = new Error();
 ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
+var _check_identifier = function(v, who, what) {
+  if (Object.prototype.toString.call(v) !== '[object String]') {
+    throw new ASTError(who + ' expects ' + what + ' to be an identifier');
+  }
+}
+
 var _check_string = function(v, who, what) {
-  if (Object.prototype.toString.call(v) !== '[object string]') {
-    throw new asterror(who + ' expects ' + what + ' to be a string');
+  if (Object.prototype.toString.call(v) !== '[object String]' ||
+      v[0] !== "\"" || v[v.length - 1] !== "\"") {
+    throw new ASTError(who + ' expects ' + what + ' to be a string');
   }
 }
 
 var _check_number = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object Number]') {
-    throw new asterror(who + ' expects ' + what + ' to be a number');
+    throw new ASTError(who + ' expects ' + what + ' to be a number');
   }
 }
 
@@ -127,6 +134,9 @@ def emit_class(stream, classname, parentname, constructor):
             emit('    }')
             emit('  }')
         elif field.type == 'identifier':
+            emit('  _check_identifier(%s);' % field.name)
+            attrs.append(field.name)
+        elif field.type == 'string':
             emit('  _check_string(%s);' % field.name)
             attrs.append(field.name)
         elif field.type == 'boolean':

@@ -18,15 +18,22 @@ ASTError.prototype = new Error();
 ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
+var _check_identifier = function(v, who, what) {
+  if (Object.prototype.toString.call(v) !== '[object String]') {
+    throw new ASTError(who + ' expects ' + what + ' to be an identifier');
+  }
+}
+
 var _check_string = function(v, who, what) {
-  if (Object.prototype.toString.call(v) !== '[object string]') {
-    throw new asterror(who + ' expects ' + what + ' to be a string');
+  if (Object.prototype.toString.call(v) !== '[object String]' ||
+      v[0] !== "\"" || v[v.length - 1] !== "\"") {
+    throw new ASTError(who + ' expects ' + what + ' to be a string');
   }
 }
 
 var _check_number = function(v, who, what) {
   if (Object.prototype.toString.call(v) !== '[object Number]') {
-    throw new asterror(who + ' expects ' + what + ' to be a number');
+    throw new ASTError(who + ' expects ' + what + ' to be a number');
   }
 }
 
@@ -63,10 +70,10 @@ Node.prototype.children = _abstractmethod;
 // Constructor(Case, [Field(identifier, name), Field(identifier, type_decl), Field(expression, expr)])
 //
 var Case = exports.Case = function(name, type_decl, expr, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
-  _check_string(type_decl);
+  _check_identifier(type_decl);
   this.type_decl = type_decl;
 
   if (!(expr instanceof Expression)) {
@@ -89,10 +96,10 @@ Object.defineProperty(Case.prototype, 'attributes', {
 // Constructor(Class, [Field(identifier, name), Field(identifier, parent), Field(feature, features, seq=True), Field(identifier, filename)])
 //
 var Class = exports.Class = function(name, parent, features, filename, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
-  _check_string(parent);
+  _check_identifier(parent);
   this.parent = parent;
 
   _check_array(features);
@@ -103,7 +110,7 @@ var Class = exports.Class = function(name, parent, features, filename, loc) {
   }
   this.features = features;
 
-  _check_string(filename);
+  _check_identifier(filename);
   this.filename = filename;
 
   this.loc = loc;
@@ -131,7 +138,7 @@ Expression.prototype.constructor = Expression
 // Constructor(Assign, [Field(identifier, name), Field(expression, expr)])
 //
 var Assign = exports.Assign = function(name, expr, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
   if (!(expr instanceof Expression)) {
@@ -159,10 +166,10 @@ var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, ac
   }
   this.expr = expr;
 
-  _check_string(type_name);
+  _check_identifier(type_name);
   this.type_name = type_name;
 
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
   _check_array(actual);
@@ -193,7 +200,7 @@ var Dispatch = exports.Dispatch = function(expr, name, actual, loc) {
   }
   this.expr = expr;
 
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
   _check_array(actual);
@@ -325,10 +332,10 @@ Object.defineProperty(Block.prototype, 'attributes', {
 // Constructor(Let, [Field(identifier, id), Field(identifier, type_decl), Field(expression, init), Field(expression, body)])
 //
 var Let = exports.Let = function(id, type_decl, init, body, loc) {
-  _check_string(id);
+  _check_identifier(id);
   this.id = id;
 
-  _check_string(type_decl);
+  _check_identifier(type_decl);
   this.type_decl = type_decl;
 
   if (!(init instanceof Expression)) {
@@ -356,7 +363,7 @@ Object.defineProperty(Let.prototype, 'attributes', {
 // Constructor(BinaryOp, [Field(identifier, op), Field(expression, left), Field(expression, right)])
 //
 var BinaryOp = exports.BinaryOp = function(op, left, right, loc) {
-  _check_string(op);
+  _check_identifier(op);
   this.op = op;
 
   if (!(left instanceof Expression)) {
@@ -384,7 +391,7 @@ Object.defineProperty(BinaryOp.prototype, 'attributes', {
 // Constructor(UnaryOp, [Field(identifier, op), Field(expression, expr)])
 //
 var UnaryOp = exports.UnaryOp = function(op, expr, loc) {
-  _check_string(op);
+  _check_identifier(op);
   this.op = op;
 
   if (!(expr instanceof Expression)) {
@@ -443,9 +450,7 @@ Object.defineProperty(BoolConst.prototype, 'attributes', {
 // Constructor(StringConst, [Field(string, str)])
 //
 var StringConst = exports.StringConst = function(str, loc) {
-  if (!(str instanceof String)) {
-    throw new ASTError('StringConst expects str to be a String');
-  }
+  _check_string(str);
   this.str = str;
 
   this.loc = loc;
@@ -455,7 +460,7 @@ StringConst.prototype = Object.create(Expression.prototype);
 StringConst.prototype.constructor = StringConst;
 
 Object.defineProperty(StringConst.prototype, 'attributes', {
-  get: function() {return [];}
+  get: function() {return ['str'];}
 });
 
 //
@@ -463,7 +468,7 @@ Object.defineProperty(StringConst.prototype, 'attributes', {
 // Constructor(New, [Field(identifier, type_name)])
 //
 var New = exports.New = function(type_name, loc) {
-  _check_string(type_name);
+  _check_identifier(type_name);
   this.type_name = type_name;
 
   this.loc = loc;
@@ -516,7 +521,7 @@ Object.defineProperty(NoExpr.prototype, 'attributes', {
 // Constructor(Obj, [Field(identifier, name)])
 //
 var Obj = exports.Obj = function(name, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
   this.loc = loc;
@@ -544,7 +549,7 @@ Feature.prototype.constructor = Feature
 // Constructor(Method, [Field(identifier, name), Field(formal, formals, seq=True), Field(identifier, return_type), Field(expression, expr)])
 //
 var Method = exports.Method = function(name, formals, return_type, expr, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
   _check_array(formals);
@@ -555,7 +560,7 @@ var Method = exports.Method = function(name, formals, return_type, expr, loc) {
   }
   this.formals = formals;
 
-  _check_string(return_type);
+  _check_identifier(return_type);
   this.return_type = return_type;
 
   if (!(expr instanceof Expression)) {
@@ -578,10 +583,10 @@ Object.defineProperty(Method.prototype, 'attributes', {
 // Constructor(Attr, [Field(identifier, name), Field(identifier, type_decl), Field(expression, init)])
 //
 var Attr = exports.Attr = function(name, type_decl, init, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
-  _check_string(type_decl);
+  _check_identifier(type_decl);
   this.type_decl = type_decl;
 
   if (!(init instanceof Expression)) {
@@ -604,10 +609,10 @@ Object.defineProperty(Attr.prototype, 'attributes', {
 // Constructor(Formal, [Field(identifier, name), Field(identifier, type_decl)])
 //
 var Formal = exports.Formal = function(name, type_decl, loc) {
-  _check_string(name);
+  _check_identifier(name);
   this.name = name;
 
-  _check_string(type_decl);
+  _check_identifier(type_decl);
   this.type_decl = type_decl;
 
   this.loc = loc;

@@ -11,7 +11,7 @@ var fs = require('fs');
 if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
-  var fileinput = '20';
+  var fileinput = '"hola i am dora"';
 
   //var result = lexer.lex_all(fileinput);
 
