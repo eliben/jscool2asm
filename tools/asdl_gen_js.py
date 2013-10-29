@@ -73,6 +73,7 @@ var Node = exports.Node = function() {
 }
 
 Node.prototype.children = _abstractmethod;
+Node.prototype.attributes = [];
 
 //
 //-------------------- AST nodes --------------------

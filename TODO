@@ -1,5 +1,7 @@
+* Parsing simple atoms works now - strings, integers, etc. Move on to stuff
+  like parsing single identifiers
 * Need a way to dump ASTs - first Node Visitor use? Node visitor should be
-  just written directly, not auto-generated?
+  just written directly, not auto-generated? And tests too...
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 
