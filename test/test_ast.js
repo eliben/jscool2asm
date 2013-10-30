@@ -24,6 +24,10 @@ var test = function() {
   assert(meth instanceof ast.Node);
   assert.deepEqual(meth.constructor.attributes, ['name', 'return_type']);
   assert.equal(meth.constructor.node_type, 'Method');
+  var children = meth.children();
+  console.log(children[0]);
+  assert.equal(children[0].name, 'formals[0]');
+  assert.equal(children[0].node, form);
 
   // Failure tests - trigger some errors ASTs constructors can catch.
   assert.throws(

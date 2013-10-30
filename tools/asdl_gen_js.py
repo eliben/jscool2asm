@@ -171,6 +171,22 @@ def emit_class(stream, classname, parentname, constructor):
     emit("});")
     emit()
 
+    emit("%s.prototype.children = function () {" % classname)
+    emit("  var children = [];")
+    for field in constructor.fields:
+        if field.seq:
+            emit("  for (var i = 0; i < this.%s.length; i++) {" % field.name)
+            child = "{'name': '%s[' + i.toString() + ']', 'node': this.%s[i]}" % (
+                field.name, field.name)
+            emit("    children.push(%s);" % child)
+            emit("  }")
+        elif field.type not in asdl_ast.builtin_types:
+            emit("  children.push({'name': '%s', 'node': this.%s});" % (
+                field.name, field.name))
+    emit("  return children;")
+    emit("}")
+    emit()
+
 
 def emit_single_node(stream, typename, constructor):
     if typename.lower() != constructor.name.lower():

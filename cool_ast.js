@@ -95,6 +95,12 @@ Object.defineProperties(Case, {
   'node_type': {get: function() {return 'Case';}}
 });
 
+Case.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  return children;
+}
+
 //
 // Class is-a Node
 // Constructor(Class, [Field(identifier, name), Field(identifier, parent), Field(feature, features, seq=True), Field(identifier, filename)])
@@ -127,6 +133,14 @@ Object.defineProperties(Class, {
   'attributes': {get: function() {return ['name', 'parent', 'filename'];}},
   'node_type': {get: function() {return 'Class';}}
 });
+
+Class.prototype.children = function () {
+  var children = [];
+  for (var i = 0; i < this.features.length; i++) {
+    children.push({'name': 'features[' + i.toString() + ']', 'node': this.features[i]});
+  }
+  return children;
+}
 
 //
 // Expression is an abstract Node interface
@@ -161,6 +175,12 @@ Object.defineProperties(Assign, {
   'attributes': {get: function() {return ['name'];}},
   'node_type': {get: function() {return 'Assign';}}
 });
+
+Assign.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  return children;
+}
 
 //
 // StaticDispatch is-a Expression
@@ -197,6 +217,15 @@ Object.defineProperties(StaticDispatch, {
   'node_type': {get: function() {return 'StaticDispatch';}}
 });
 
+StaticDispatch.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  for (var i = 0; i < this.actual.length; i++) {
+    children.push({'name': 'actual[' + i.toString() + ']', 'node': this.actual[i]});
+  }
+  return children;
+}
+
 //
 // Dispatch is-a Expression
 // Constructor(Dispatch, [Field(expression, expr), Field(identifier, name), Field(expression, actual, seq=True)])
@@ -229,6 +258,15 @@ Object.defineProperties(Dispatch, {
   'node_type': {get: function() {return 'Dispatch';}}
 });
 
+Dispatch.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  for (var i = 0; i < this.actual.length; i++) {
+    children.push({'name': 'actual[' + i.toString() + ']', 'node': this.actual[i]});
+  }
+  return children;
+}
+
 //
 // Cond is-a Expression
 // Constructor(Cond, [Field(expression, pred), Field(expression, then_exp), Field(expression, else_exp)])
@@ -260,6 +298,14 @@ Object.defineProperties(Cond, {
   'node_type': {get: function() {return 'Cond';}}
 });
 
+Cond.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'pred', 'node': this.pred});
+  children.push({'name': 'then_exp', 'node': this.then_exp});
+  children.push({'name': 'else_exp', 'node': this.else_exp});
+  return children;
+}
+
 //
 // Loop is-a Expression
 // Constructor(Loop, [Field(expression, pred), Field(expression, body)])
@@ -285,6 +331,13 @@ Object.defineProperties(Loop, {
   'attributes': {get: function() {return [];}},
   'node_type': {get: function() {return 'Loop';}}
 });
+
+Loop.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'pred', 'node': this.pred});
+  children.push({'name': 'body', 'node': this.body});
+  return children;
+}
 
 //
 // Typcase is-a Expression
@@ -315,6 +368,15 @@ Object.defineProperties(Typcase, {
   'node_type': {get: function() {return 'Typcase';}}
 });
 
+Typcase.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  for (var i = 0; i < this.cases.length; i++) {
+    children.push({'name': 'cases[' + i.toString() + ']', 'node': this.cases[i]});
+  }
+  return children;
+}
+
 //
 // Block is-a Expression
 // Constructor(Block, [Field(expression, body, seq=True)])
@@ -338,6 +400,14 @@ Object.defineProperties(Block, {
   'attributes': {get: function() {return [];}},
   'node_type': {get: function() {return 'Block';}}
 });
+
+Block.prototype.children = function () {
+  var children = [];
+  for (var i = 0; i < this.body.length; i++) {
+    children.push({'name': 'body[' + i.toString() + ']', 'node': this.body[i]});
+  }
+  return children;
+}
 
 //
 // Let is-a Expression
@@ -371,6 +441,13 @@ Object.defineProperties(Let, {
   'node_type': {get: function() {return 'Let';}}
 });
 
+Let.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'init', 'node': this.init});
+  children.push({'name': 'body', 'node': this.body});
+  return children;
+}
+
 //
 // BinaryOp is-a Expression
 // Constructor(BinaryOp, [Field(identifier, op), Field(expression, left), Field(expression, right)])
@@ -400,6 +477,13 @@ Object.defineProperties(BinaryOp, {
   'node_type': {get: function() {return 'BinaryOp';}}
 });
 
+BinaryOp.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'left', 'node': this.left});
+  children.push({'name': 'right', 'node': this.right});
+  return children;
+}
+
 //
 // UnaryOp is-a Expression
 // Constructor(UnaryOp, [Field(identifier, op), Field(expression, expr)])
@@ -424,6 +508,12 @@ Object.defineProperties(UnaryOp, {
   'node_type': {get: function() {return 'UnaryOp';}}
 });
 
+UnaryOp.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  return children;
+}
+
 //
 // IntConst is-a Expression
 // Constructor(IntConst, [Field(int, token)])
@@ -442,6 +532,11 @@ Object.defineProperties(IntConst, {
   'attributes': {get: function() {return ['token'];}},
   'node_type': {get: function() {return 'IntConst';}}
 });
+
+IntConst.prototype.children = function () {
+  var children = [];
+  return children;
+}
 
 //
 // BoolConst is-a Expression
@@ -462,6 +557,11 @@ Object.defineProperties(BoolConst, {
   'node_type': {get: function() {return 'BoolConst';}}
 });
 
+BoolConst.prototype.children = function () {
+  var children = [];
+  return children;
+}
+
 //
 // StringConst is-a Expression
 // Constructor(StringConst, [Field(string, str)])
@@ -481,6 +581,11 @@ Object.defineProperties(StringConst, {
   'node_type': {get: function() {return 'StringConst';}}
 });
 
+StringConst.prototype.children = function () {
+  var children = [];
+  return children;
+}
+
 //
 // New is-a Expression
 // Constructor(New, [Field(identifier, type_name)])
@@ -499,6 +604,11 @@ Object.defineProperties(New, {
   'attributes': {get: function() {return ['type_name'];}},
   'node_type': {get: function() {return 'New';}}
 });
+
+New.prototype.children = function () {
+  var children = [];
+  return children;
+}
 
 //
 // IsVoid is-a Expression
@@ -521,6 +631,12 @@ Object.defineProperties(IsVoid, {
   'node_type': {get: function() {return 'IsVoid';}}
 });
 
+IsVoid.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'expr', 'node': this.expr});
+  return children;
+}
+
 //
 // NoExpr is-a Expression
 // Constructor(NoExpr, [])
@@ -536,6 +652,11 @@ Object.defineProperties(NoExpr, {
   'attributes': {get: function() {return [];}},
   'node_type': {get: function() {return 'NoExpr';}}
 });
+
+NoExpr.prototype.children = function () {
+  var children = [];
+  return children;
+}
 
 //
 // Obj is-a Expression
@@ -555,6 +676,11 @@ Object.defineProperties(Obj, {
   'attributes': {get: function() {return ['name'];}},
   'node_type': {get: function() {return 'Obj';}}
 });
+
+Obj.prototype.children = function () {
+  var children = [];
+  return children;
+}
 
 //
 // Feature is an abstract Node interface
@@ -601,6 +727,15 @@ Object.defineProperties(Method, {
   'node_type': {get: function() {return 'Method';}}
 });
 
+Method.prototype.children = function () {
+  var children = [];
+  for (var i = 0; i < this.formals.length; i++) {
+    children.push({'name': 'formals[' + i.toString() + ']', 'node': this.formals[i]});
+  }
+  children.push({'name': 'expr', 'node': this.expr});
+  return children;
+}
+
 //
 // Attr is-a Feature
 // Constructor(Attr, [Field(identifier, name), Field(identifier, type_decl), Field(expression, init)])
@@ -628,6 +763,12 @@ Object.defineProperties(Attr, {
   'node_type': {get: function() {return 'Attr';}}
 });
 
+Attr.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'init', 'node': this.init});
+  return children;
+}
+
 //
 // Formal is-a Node
 // Constructor(Formal, [Field(identifier, name), Field(identifier, type_decl)])
@@ -649,6 +790,11 @@ Object.defineProperties(Formal, {
   'attributes': {get: function() {return ['name', 'type_decl'];}},
   'node_type': {get: function() {return 'Formal';}}
 });
+
+Formal.prototype.children = function () {
+  var children = [];
+  return children;
+}
 
 //
 // Program is-a Node
@@ -673,4 +819,12 @@ Object.defineProperties(Program, {
   'attributes': {get: function() {return [];}},
   'node_type': {get: function() {return 'Program';}}
 });
+
+Program.prototype.children = function () {
+  var children = [];
+  for (var i = 0; i < this.classes.length; i++) {
+    children.push({'name': 'classes[' + i.toString() + ']', 'node': this.classes[i]});
+  }
+  return children;
+}
 
