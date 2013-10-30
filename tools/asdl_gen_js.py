@@ -73,7 +73,9 @@ var Node = exports.Node = function() {
 }
 
 Node.prototype.children = _abstractmethod;
-Node.prototype.attributes = [];
+Node.attributes = [];
+Node.node_type = 'Node';
+
 
 //
 //-------------------- AST nodes --------------------
@@ -163,8 +165,9 @@ def emit_class(stream, classname, parentname, constructor):
     emit('%s.prototype.constructor = %s;' % (classname, classname))
     emit()
 
-    emit("Object.defineProperty(%s.prototype, 'attributes', {" % classname)
-    emit("  get: function() {return %s;}" % attrs)
+    emit("Object.defineProperties(%s, {" % classname)
+    emit("  'attributes': {get: function() {return %s;}}," % attrs)
+    emit("  'node_type': {get: function() {return '%s';}}" % classname)
     emit("});")
     emit()
 

@@ -22,7 +22,8 @@ var test = function() {
   var meth = new ast.Method('fibo', [form], 'int', obj);
   assert(meth instanceof ast.Feature);
   assert(meth instanceof ast.Node);
-  assert.deepEqual(meth.attributes, ['name', 'return_type']);
+  assert.deepEqual(meth.constructor.attributes, ['name', 'return_type']);
+  assert.equal(meth.constructor.node_type, 'Method');
 
   // Failure tests - trigger some errors ASTs constructors can catch.
   assert.throws(

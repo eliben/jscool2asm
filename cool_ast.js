@@ -60,7 +60,9 @@ var Node = exports.Node = function() {
 }
 
 Node.prototype.children = _abstractmethod;
-Node.prototype.attributes = [];
+Node.attributes = [];
+Node.node_type = 'Node';
+
 
 //
 //-------------------- AST nodes --------------------
@@ -88,8 +90,9 @@ var Case = exports.Case = function(name, type_decl, expr, loc) {
 Case.prototype = Object.create(Node.prototype);
 Case.prototype.constructor = Case;
 
-Object.defineProperty(Case.prototype, 'attributes', {
-  get: function() {return ['name', 'type_decl'];}
+Object.defineProperties(Case, {
+  'attributes': {get: function() {return ['name', 'type_decl'];}},
+  'node_type': {get: function() {return 'Case';}}
 });
 
 //
@@ -120,8 +123,9 @@ var Class = exports.Class = function(name, parent, features, filename, loc) {
 Class.prototype = Object.create(Node.prototype);
 Class.prototype.constructor = Class;
 
-Object.defineProperty(Class.prototype, 'attributes', {
-  get: function() {return ['name', 'parent', 'filename'];}
+Object.defineProperties(Class, {
+  'attributes': {get: function() {return ['name', 'parent', 'filename'];}},
+  'node_type': {get: function() {return 'Class';}}
 });
 
 //
@@ -153,8 +157,9 @@ var Assign = exports.Assign = function(name, expr, loc) {
 Assign.prototype = Object.create(Expression.prototype);
 Assign.prototype.constructor = Assign;
 
-Object.defineProperty(Assign.prototype, 'attributes', {
-  get: function() {return ['name'];}
+Object.defineProperties(Assign, {
+  'attributes': {get: function() {return ['name'];}},
+  'node_type': {get: function() {return 'Assign';}}
 });
 
 //
@@ -187,8 +192,9 @@ var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, ac
 StaticDispatch.prototype = Object.create(Expression.prototype);
 StaticDispatch.prototype.constructor = StaticDispatch;
 
-Object.defineProperty(StaticDispatch.prototype, 'attributes', {
-  get: function() {return ['type_name', 'name'];}
+Object.defineProperties(StaticDispatch, {
+  'attributes': {get: function() {return ['type_name', 'name'];}},
+  'node_type': {get: function() {return 'StaticDispatch';}}
 });
 
 //
@@ -218,8 +224,9 @@ var Dispatch = exports.Dispatch = function(expr, name, actual, loc) {
 Dispatch.prototype = Object.create(Expression.prototype);
 Dispatch.prototype.constructor = Dispatch;
 
-Object.defineProperty(Dispatch.prototype, 'attributes', {
-  get: function() {return ['name'];}
+Object.defineProperties(Dispatch, {
+  'attributes': {get: function() {return ['name'];}},
+  'node_type': {get: function() {return 'Dispatch';}}
 });
 
 //
@@ -248,8 +255,9 @@ var Cond = exports.Cond = function(pred, then_exp, else_exp, loc) {
 Cond.prototype = Object.create(Expression.prototype);
 Cond.prototype.constructor = Cond;
 
-Object.defineProperty(Cond.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(Cond, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'Cond';}}
 });
 
 //
@@ -273,8 +281,9 @@ var Loop = exports.Loop = function(pred, body, loc) {
 Loop.prototype = Object.create(Expression.prototype);
 Loop.prototype.constructor = Loop;
 
-Object.defineProperty(Loop.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(Loop, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'Loop';}}
 });
 
 //
@@ -301,8 +310,9 @@ var Typcase = exports.Typcase = function(expr, cases, loc) {
 Typcase.prototype = Object.create(Expression.prototype);
 Typcase.prototype.constructor = Typcase;
 
-Object.defineProperty(Typcase.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(Typcase, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'Typcase';}}
 });
 
 //
@@ -324,8 +334,9 @@ var Block = exports.Block = function(body, loc) {
 Block.prototype = Object.create(Expression.prototype);
 Block.prototype.constructor = Block;
 
-Object.defineProperty(Block.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(Block, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'Block';}}
 });
 
 //
@@ -355,8 +366,9 @@ var Let = exports.Let = function(id, type_decl, init, body, loc) {
 Let.prototype = Object.create(Expression.prototype);
 Let.prototype.constructor = Let;
 
-Object.defineProperty(Let.prototype, 'attributes', {
-  get: function() {return ['id', 'type_decl'];}
+Object.defineProperties(Let, {
+  'attributes': {get: function() {return ['id', 'type_decl'];}},
+  'node_type': {get: function() {return 'Let';}}
 });
 
 //
@@ -383,8 +395,9 @@ var BinaryOp = exports.BinaryOp = function(op, left, right, loc) {
 BinaryOp.prototype = Object.create(Expression.prototype);
 BinaryOp.prototype.constructor = BinaryOp;
 
-Object.defineProperty(BinaryOp.prototype, 'attributes', {
-  get: function() {return ['op'];}
+Object.defineProperties(BinaryOp, {
+  'attributes': {get: function() {return ['op'];}},
+  'node_type': {get: function() {return 'BinaryOp';}}
 });
 
 //
@@ -406,8 +419,9 @@ var UnaryOp = exports.UnaryOp = function(op, expr, loc) {
 UnaryOp.prototype = Object.create(Expression.prototype);
 UnaryOp.prototype.constructor = UnaryOp;
 
-Object.defineProperty(UnaryOp.prototype, 'attributes', {
-  get: function() {return ['op'];}
+Object.defineProperties(UnaryOp, {
+  'attributes': {get: function() {return ['op'];}},
+  'node_type': {get: function() {return 'UnaryOp';}}
 });
 
 //
@@ -424,8 +438,9 @@ var IntConst = exports.IntConst = function(token, loc) {
 IntConst.prototype = Object.create(Expression.prototype);
 IntConst.prototype.constructor = IntConst;
 
-Object.defineProperty(IntConst.prototype, 'attributes', {
-  get: function() {return ['token'];}
+Object.defineProperties(IntConst, {
+  'attributes': {get: function() {return ['token'];}},
+  'node_type': {get: function() {return 'IntConst';}}
 });
 
 //
@@ -442,8 +457,9 @@ var BoolConst = exports.BoolConst = function(value, loc) {
 BoolConst.prototype = Object.create(Expression.prototype);
 BoolConst.prototype.constructor = BoolConst;
 
-Object.defineProperty(BoolConst.prototype, 'attributes', {
-  get: function() {return ['value'];}
+Object.defineProperties(BoolConst, {
+  'attributes': {get: function() {return ['value'];}},
+  'node_type': {get: function() {return 'BoolConst';}}
 });
 
 //
@@ -460,8 +476,9 @@ var StringConst = exports.StringConst = function(str, loc) {
 StringConst.prototype = Object.create(Expression.prototype);
 StringConst.prototype.constructor = StringConst;
 
-Object.defineProperty(StringConst.prototype, 'attributes', {
-  get: function() {return ['str'];}
+Object.defineProperties(StringConst, {
+  'attributes': {get: function() {return ['str'];}},
+  'node_type': {get: function() {return 'StringConst';}}
 });
 
 //
@@ -478,8 +495,9 @@ var New = exports.New = function(type_name, loc) {
 New.prototype = Object.create(Expression.prototype);
 New.prototype.constructor = New;
 
-Object.defineProperty(New.prototype, 'attributes', {
-  get: function() {return ['type_name'];}
+Object.defineProperties(New, {
+  'attributes': {get: function() {return ['type_name'];}},
+  'node_type': {get: function() {return 'New';}}
 });
 
 //
@@ -498,8 +516,9 @@ var IsVoid = exports.IsVoid = function(expr, loc) {
 IsVoid.prototype = Object.create(Expression.prototype);
 IsVoid.prototype.constructor = IsVoid;
 
-Object.defineProperty(IsVoid.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(IsVoid, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'IsVoid';}}
 });
 
 //
@@ -513,8 +532,9 @@ var NoExpr = exports.NoExpr = function(loc) {
 NoExpr.prototype = Object.create(Expression.prototype);
 NoExpr.prototype.constructor = NoExpr;
 
-Object.defineProperty(NoExpr.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(NoExpr, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'NoExpr';}}
 });
 
 //
@@ -531,8 +551,9 @@ var Obj = exports.Obj = function(name, loc) {
 Obj.prototype = Object.create(Expression.prototype);
 Obj.prototype.constructor = Obj;
 
-Object.defineProperty(Obj.prototype, 'attributes', {
-  get: function() {return ['name'];}
+Object.defineProperties(Obj, {
+  'attributes': {get: function() {return ['name'];}},
+  'node_type': {get: function() {return 'Obj';}}
 });
 
 //
@@ -575,8 +596,9 @@ var Method = exports.Method = function(name, formals, return_type, expr, loc) {
 Method.prototype = Object.create(Feature.prototype);
 Method.prototype.constructor = Method;
 
-Object.defineProperty(Method.prototype, 'attributes', {
-  get: function() {return ['name', 'return_type'];}
+Object.defineProperties(Method, {
+  'attributes': {get: function() {return ['name', 'return_type'];}},
+  'node_type': {get: function() {return 'Method';}}
 });
 
 //
@@ -601,8 +623,9 @@ var Attr = exports.Attr = function(name, type_decl, init, loc) {
 Attr.prototype = Object.create(Feature.prototype);
 Attr.prototype.constructor = Attr;
 
-Object.defineProperty(Attr.prototype, 'attributes', {
-  get: function() {return ['name', 'type_decl'];}
+Object.defineProperties(Attr, {
+  'attributes': {get: function() {return ['name', 'type_decl'];}},
+  'node_type': {get: function() {return 'Attr';}}
 });
 
 //
@@ -622,8 +645,9 @@ var Formal = exports.Formal = function(name, type_decl, loc) {
 Formal.prototype = Object.create(Node.prototype);
 Formal.prototype.constructor = Formal;
 
-Object.defineProperty(Formal.prototype, 'attributes', {
-  get: function() {return ['name', 'type_decl'];}
+Object.defineProperties(Formal, {
+  'attributes': {get: function() {return ['name', 'type_decl'];}},
+  'node_type': {get: function() {return 'Formal';}}
 });
 
 //
@@ -645,7 +669,8 @@ var Program = exports.Program = function(classes, loc) {
 Program.prototype = Object.create(Node.prototype);
 Program.prototype.constructor = Program;
 
-Object.defineProperty(Program.prototype, 'attributes', {
-  get: function() {return [];}
+Object.defineProperties(Program, {
+  'attributes': {get: function() {return [];}},
+  'node_type': {get: function() {return 'Program';}}
 });
 
