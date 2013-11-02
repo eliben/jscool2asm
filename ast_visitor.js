@@ -38,6 +38,7 @@ NodeVisitor.prototype.visit_children = function(node) {
 
 // NodeDumper - implements the visitor interface and dumps an AST tree/node
 // into a string.
+// dump_ast is a convenience function.
 var NodeDumper = exports.NodeDumper = function(show_loc) {
   this.show_loc = show_loc || false;
 }
@@ -72,3 +73,10 @@ NodeDumper.prototype._visit_aux = function(node, offset) {
 
   return output;
 }
+
+var dump_ast = exports.dump_ast = function(ast, show_loc) {
+  show_loc = show_loc || false;
+  var dumper = new NodeDumper(show_loc);
+  return dumper.visit(ast);
+}
+

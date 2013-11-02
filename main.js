@@ -1,5 +1,6 @@
 'use strict';
 
+var ast_visitor = require('./ast_visitor');
 var lexer = require('./lexer');
 var parser = require('./parser');
 var fs = require('fs');
@@ -28,6 +29,7 @@ if (module.parent === null) {
     var prsr = new parser.Parser();
     var ast = prsr.parse(fileinput);
     console.log(ast);
+    console.log(ast_visitor.dump_ast(ast));
   //} catch (e) {
     //if (e instanceof parser.ParseError) {
       //console.log('Caught ParseError');
