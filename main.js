@@ -12,7 +12,8 @@ var fs = require('fs');
 if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
-  var fileinput = '"hola i am dora"';
+  //var fileinput = '"hola i am dora"';
+  var fileinput = 'foo(1, 2)';
 
   //var result = lexer.lex_all(fileinput);
 
@@ -27,9 +28,12 @@ if (module.parent === null) {
   //};
   //try {
     var prsr = new parser.Parser();
+    console.log('----> Parsing:');
+    console.log(fileinput);
     var ast = prsr.parse(fileinput);
+    console.log('----> Result:');
     console.log(ast);
-    console.log(ast_visitor.dump_ast(ast));
+    console.log(ast_visitor.dump_ast(ast, true));
   //} catch (e) {
     //if (e instanceof parser.ParseError) {
       //console.log('Caught ParseError');

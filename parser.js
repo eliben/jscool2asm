@@ -72,6 +72,7 @@ var Parser = exports.Parser = function() {
     'WHILE':    this._parse_while_expr,
     'ISVOID':   this._parse_isvoid_expr,
     'NOT':      this._parse_not_expr,
+    'TILDE':    this._parse_tilde_expr,
     'NEW':      this._parse_new_expr,
     'LET':      this._parse_let_expr,
     'CASE':     this._parse_case_expr
@@ -94,6 +95,11 @@ Parser._operator_precedence = {
   'ASSIGN_ARROW': 80
 }
 
+// Is this a token that could start a dispatch?
+Parser._is_dispatch_token = function(tok) {
+  return tok.name === 'AT' || tok.name === 'DOT' || tok.name === 'L_PAREN';
+}
+
 // Parses Cool source code contained in buf and returns the full AST (Program
 // node). In case of an error, throws a ParseError.
 Parser.prototype.parse = function(buf) {
@@ -108,7 +114,7 @@ Parser.prototype.parse = function(buf) {
 Parser.prototype._advance = function() {
   var cur = this.cur_token;
   var next = this.lexer.token();
-  if (next.name === 'ERROR') {
+  if (next && next.name === 'ERROR') {
     throw new ParseError(this.lexer.errors[this.lexer.errors.length - 1]);
   }
   this.cur_token = next;
@@ -122,9 +128,15 @@ Parser.prototype._match = function(tokname) {
   if (this.cur_token.name === tokname) {
     return this._advance();
   } else {
-    throw new ParseError("Line " + this.cur_token.lineno + ": expected '" +
-                         tokname + "', got '" + this.cur_token.name + "'");
+    this._error("expected '" + tokname + "', got '" +
+                this.cur_token.name + "'");
   }
+}
+
+// Throw a parse error with the given message, specifying the lineno of the
+// current token.
+Parser.prototype._error = function(msg) {
+  throw new ParseError("Line " + this.cur_token.lineno + ": " + msg);
 }
 
 Parser.prototype._parse_program = function() {
@@ -161,13 +173,26 @@ Parser.prototype._parse_atom = function() {
   // It's not starting with one of the known tokens. So the next token must be
   // a valid ID or constant.
   if (tok.name === 'IDENTIFIER') {
+    var id_node = new cool_ast.Obj(tok.value, tok.lineno);
+    this._advance();
+
+    // This can be a dispatch.
+    if (Parser._is_dispatch_token(this.cur_token)) {
+      return this._parse_dispatch(id_node);
+    }
+
+    return id_node;
   } else if (tok.name === 'NUMBER') {
+    this._advance();
     return new cool_ast.IntConst(parseInt(tok.value, 10), tok.lineno);
   } else if (tok.name === 'STRING') {
+    this._advance();
     return new cool_ast.StringConst(tok.value, tok.lineno);
   } else if (tok.name === 'TRUE') {
+    this._advance();
     return new cool_ast.BoolConst(true, tok.lineno);
   } else if (tok.name === 'FALSE') {
+    this._advance();
     return new cool_ast.BoolConst(false, tok.lineno);
   }
   return null;
@@ -197,6 +222,15 @@ Parser.prototype._parse_not_expr = function() {
 
 }
 
+Parser.prototype._parse_tilde_expr = function() {
+  // The tilde binds stronger than all binary operators, so it can simply
+  // parse the atom following it.
+  var tilde_lineno = this.cur_token.lineno;
+  this._advance();
+  var negated_atom = this._parse_atom();
+  return new cool_ast.UnaryOp('~', negated_atom, tilde_lineno);
+}
+
 Parser.prototype._parse_new_expr = function() {
 
 }
@@ -208,3 +242,56 @@ Parser.prototype._parse_let_expr = function() {
 Parser.prototype._parse_case_expr = function() {
 
 }
+
+// Parse a dispatch. We know that the current token begins a dispatch, and atom
+// is the already parsed 'expr' child node of the dispatch.
+Parser.prototype._parse_dispatch = function(atom) {
+  var tok = this.cur_token;
+  var type_tok = null;
+  var name_tok = null;
+  if (tok.name === 'AT') {
+    // Static dispatch. Expect a type to follow, and then a '.'
+    this._advance();
+    type_tok = this._match('TYPE');
+    if (this.cur_token.name === 'DOT') {
+      this._error("expected a '.' after @ dispatch, got '" +
+                  this.cur_token.name + "'");
+    }
+  }
+  if (tok.name === 'DOT') {
+    this._advance();
+    name_tok = this._match('IDENTIFIER');
+  }
+
+  // Now we have everything preceding the arguments of the dispatch. Parse the
+  // arguments into a list of expression nodes.
+  this._match('L_PAREN');
+  var args = [];
+  while (this.cur_token.name !== 'R_PAREN') {
+    args.push(this._parse_expression(-1));
+    if (this.cur_token.name === 'COMMA') {
+      this._advance();
+    }
+  }
+  // Skip the R_PAREN. We're done parsing the dispatch. Now on to building the
+  // AST node representing it...
+  this._advance();
+
+  // If we have a name_tok, that's the name of the dispatch. Otherwise atom is
+  // the name (but in that case, atom itself must be an identifier). If we also
+  // have a type_tok, it's a static dispatch.
+  if (name_tok === null) {
+    if (!(atom instanceof cool_ast.Obj)) {
+      this._error("bad dispatch on " + atom.constructor.node_type);
+    }
+    return new cool_ast.Dispatch(new cool_ast.NoExpr(), atom.name,
+                                 args, atom.loc);
+  } else {
+    if (type_tok === null) {
+      return new cool_ast.Dispatch(atom, name_tok, args, atom.loc)
+    } else {
+      return new cool_ast.StaticDispatch(atom, name_tok, args, atom.loc);
+    }
+  }
+}
+
