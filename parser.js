@@ -231,7 +231,11 @@ Parser.prototype._parse_while_expr = function() {
 }
 
 Parser.prototype._parse_isvoid_expr = function() {
-
+  var isvoid_tok = this._match('ISVOID');
+  // ISVOID binds stronger than all binary operators, so it can simply
+  // parse the atom following it.
+  var atom = this._parse_atom();
+  return new cool_ast.IsVoid(atom, isvoid_tok.lineno);
 }
 
 Parser.prototype._parse_not_expr = function() {
@@ -242,16 +246,17 @@ Parser.prototype._parse_not_expr = function() {
 }
 
 Parser.prototype._parse_tilde_expr = function() {
-  // The tilde binds stronger than all binary operators, so it can simply
+  var tilde_tok = this._match('TILDE');
+  // TILDE binds stronger than all binary operators, so it can simply
   // parse the atom following it.
-  var tilde_lineno = this.cur_token.lineno;
-  this._advance();
   var negated_atom = this._parse_atom();
-  return new cool_ast.UnaryOp('~', negated_atom, tilde_lineno);
+  return new cool_ast.UnaryOp('~', negated_atom, tilde_tok.lineno);
 }
 
 Parser.prototype._parse_new_expr = function() {
-
+  var new_tok = this._match('NEW');
+  var type_tok = this._match('TYPE');
+  return new cool_ast.New(type_tok.value, new_tok.lineno);
 }
 
 Parser.prototype._parse_let_expr = function() {
