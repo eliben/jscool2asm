@@ -16,6 +16,7 @@ if (module.parent === null) {
   var fileinput = '{(((foo(1, 2)))); \n\
                    let joe : Kooka <- 10, moe : Inr <- "google" in (choochoo);\n\
                    if new Foo then true else (20);\n\
+                   case joe of foo : Foo => 20; joo : Joo => true;  esac\n\
                    while ~ not 10 loop 10 pool; "je"}';
 
   //var result = lexer.lex_all(fileinput);

@@ -286,7 +286,7 @@ Parser.prototype._parse_let_expr = function() {
     //console.log(let_inits);
     //let_inits.push(2);
     let_inits.push(new cool_ast.Letinit(id_tok.value, type_decl_tok.value,
-                   init_node, id_tok.lineno));
+                                        init_node, id_tok.lineno));
 
     if (this.cur_token.name === 'COMMA') {
       this._advance();
@@ -300,7 +300,25 @@ Parser.prototype._parse_let_expr = function() {
 }
 
 Parser.prototype._parse_case_expr = function() {
+  this._match('CASE');
+  var expr_node = this._parse_expression();
+  this._match('OF');
+  var cases = [];
+  while (this.cur_token.name !== 'ESAC') {
+    var name_tok = this._match('IDENTIFIER');
+    this._match('COLON');
+    var type_decl_tok = this._match('TYPE');
+    this._match('CASE_ARROW');
+    var expr_value_node = this._parse_expression();
+    if (this.cur_token.name === 'SEMI') {
+      this._advance();
+    }
+    cases.push(new cool_ast.Case(name_tok.value, type_decl_tok.value,
+                                 expr_value_node, name_tok.lineno));
+  }
+  this._advance();
 
+  return new cool_ast.Typcase(expr_node, cases, expr_node.loc);
 }
 
 // Parse a dispatch. We know that the current token begins a dispatch, and atom
