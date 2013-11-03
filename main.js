@@ -13,7 +13,7 @@ if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
   //var fileinput = '"hola i am dora"';
-  var fileinput = '(((foo(1, 2))))';
+  var fileinput = '{(((foo(1, 2)))); 10; "je"}';
 
   //var result = lexer.lex_all(fileinput);
 

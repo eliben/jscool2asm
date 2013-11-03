@@ -202,11 +202,21 @@ Parser.prototype._parse_atom = function() {
 }
 
 Parser.prototype._parse_expr_block = function() {
-
+  this._match('L_BRACE');
+  // Parse a sequence of SEMI-separated expressions.
+  var exprs = [];
+  while (this.cur_token.name !== 'R_BRACE') {
+    exprs.push(this._parse_expression());
+    if (this.cur_token.name === 'SEMI') {
+      this._advance();
+    }
+  }
+  this._advance();
+  return new cool_ast.Block(exprs, exprs[0].loc);
 }
 
 Parser.prototype._parse_parenthesized_expr = function() {
-  this._advance();
+  this._match('L_PAREN');
   var expr_node = this._parse_expression();
   this._match('R_PAREN');
   return expr_node;
