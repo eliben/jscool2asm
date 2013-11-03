@@ -81,19 +81,19 @@ var Parser = exports.Parser = function() {
 
 // Information about operators - kind ('unary', 'binary') and precedence.
 Parser._operator_info = {
-  'DOT':          {kind: 'binary', prec: 200},
-  'AT':           {kind: 'binary', prec: 190},
-  'TILDE':        {kind: 'unary', prec: 180},
-  'ISVOID':       {kind: 'unary', prec: 170},
-  'MULTIPLY':     {kind: 'binary', prec: 160},
-  'DIVIDE':       {kind: 'binary', prec: 150},
-  'PLUS':         {kind: 'binary', prec: 140},
-  'MINUS':        {kind: 'binary', prec: 130},
-  'LEQ':          {kind: 'binary', prec: 120},
-  'LE':           {kind: 'binary', prec: 110},
-  'EQ':           {kind: 'binary', prec: 100},
-  'NOT':          {kind: 'unary', prec: 90},
-  'ASSIGN_ARROW': {kind: 'binary', prec: 80}
+  'DOT':          {kind: 'binary', prec: 200, assoc: 'left'},
+  'AT':           {kind: 'binary', prec: 190, assoc: 'left'},
+  'TILDE':        {kind: 'unary', prec: 180, assoc: 'left'},
+  'ISVOID':       {kind: 'unary', prec: 170, assoc: 'left'},
+  'MULTIPLY':     {kind: 'binary', prec: 160, assoc: 'left'},
+  'DIVIDE':       {kind: 'binary', prec: 150, assoc: 'left'},
+  'PLUS':         {kind: 'binary', prec: 140, assoc: 'left'},
+  'MINUS':        {kind: 'binary', prec: 130, assoc: 'left'},
+  'LEQ':          {kind: 'binary', prec: 120, assoc: 'left'},
+  'LE':           {kind: 'binary', prec: 110, assoc: 'left'},
+  'EQ':           {kind: 'binary', prec: 100, assoc: 'left'},
+  'NOT':          {kind: 'unary', prec: 90, assoc: 'left'},
+  'ASSIGN_ARROW': {kind: 'binary', prec: 80, assoc: 'right'}
 }
 
 // Is this a token that could start a dispatch?
@@ -165,13 +165,33 @@ Parser.prototype._parse_program = function() {
 Parser.prototype._parse_expression = function(min_prec) {
   min_prec = min_prec || -1;
   // Parse until the next binary operator
-  var atom_node = this._parse_atom();
+  var result_node = this._parse_atom();
 
-  var tok = this.cur_token;
-  //while 
+  // Main precedence-climbing loop. Look at the next token and try to figure out
+  // whether to incorporate it into the expression. If the next token is a
+  // binary operator of high-enough precedence, rebuilt the result node with
+  // it on top. Otherwise, return to caller that will handle this operator.
+  while (true) {
+    var op_tok = this.cur_token;
+    if (!op_tok) {
+      break;
+    }
+    var op_info = Parser._operator_info[op_tok.name];
+    if (op_info && op_info.kind === 'binary' && op_info.prec >= min_prec) {
+      this._advance();
+      // Build the right-hand side of the binary expression.
+      var next_min_prec = op_info.assoc === 'left' ? op_info.prec + 1 :
+                                                     op_info.prec;
+      var rhs = this._parse_expression(next_min_prec);
+      // Build the BinaryOp node to represent the result so far
+      result_node = new cool_ast.BinaryOp(op_tok.value, result_node, rhs,
+                                          op_tok.lineno);
+    } else {
+      break;
+    }
+  }
 
-  // TODO: zz
-  return atom_node;
+  return result_node;
 }
 
 // An "atom" is any part of an expression between binary operators. So it can
