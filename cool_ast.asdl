@@ -29,8 +29,7 @@ module COOL
                | Loop(expression pred, expression body)
                | Typcase(expression expr, case* cases)
                | Block(expression* body)
-               | Let(identifier id, identifier type_decl,
-                     expression init, expression body)
+               | Let(letinit* init, expression body)
                | BinaryOp(identifier op, expression left, expression right)
                | UnaryOp(identifier op, expression expr)
                | IntConst(int token)
@@ -40,5 +39,7 @@ module COOL
                | IsVoid(expression expr)
                | NoExpr
                | Obj(identifier name)
+
+    letinit = Letinit(identifier id, identifier type_decl, expression init)
 }
 

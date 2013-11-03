@@ -411,17 +411,14 @@ Block.prototype.children = function () {
 
 //
 // Let is-a Expression
-// Constructor(Let, [Field(identifier, id), Field(identifier, type_decl), Field(expression, init), Field(expression, body)])
+// Constructor(Let, [Field(letinit, init, seq=True), Field(expression, body)])
 //
-var Let = exports.Let = function(id, type_decl, init, body, loc) {
-  _check_identifier(id);
-  this.id = id;
-
-  _check_identifier(type_decl);
-  this.type_decl = type_decl;
-
-  if (!(init instanceof Expression)) {
-    throw new ASTError('Let expects init to be a Expression');
+var Let = exports.Let = function(init, body, loc) {
+  _check_array(init);
+  for (var i = 0; i < init.length; i++) {
+    if (!(init[i] instanceof Letinit)) {
+      throw new ASTError('Let expects init to be an array of Letinit');
+    }
   }
   this.init = init;
 
@@ -437,13 +434,15 @@ Let.prototype = Object.create(Expression.prototype);
 Let.prototype.constructor = Let;
 
 Object.defineProperties(Let, {
-  'attributes': {get: function() {return ['id', 'type_decl'];}},
+  'attributes': {get: function() {return [];}},
   'node_type': {get: function() {return 'Let';}}
 });
 
 Let.prototype.children = function () {
   var children = [];
-  children.push({'name': 'init', 'node': this.init});
+  for (var i = 0; i < this.init.length; i++) {
+    children.push({'name': 'init[' + i.toString() + ']', 'node': this.init[i]});
+  }
   children.push({'name': 'body', 'node': this.body});
   return children;
 }
@@ -793,6 +792,39 @@ Object.defineProperties(Formal, {
 
 Formal.prototype.children = function () {
   var children = [];
+  return children;
+}
+
+//
+// Letinit is-a Node
+// Constructor(Letinit, [Field(identifier, id), Field(identifier, type_decl), Field(expression, init)])
+//
+var Letinit = exports.Letinit = function(id, type_decl, init, loc) {
+  _check_identifier(id);
+  this.id = id;
+
+  _check_identifier(type_decl);
+  this.type_decl = type_decl;
+
+  if (!(init instanceof Expression)) {
+    throw new ASTError('Letinit expects init to be a Expression');
+  }
+  this.init = init;
+
+  this.loc = loc;
+}
+
+Letinit.prototype = Object.create(Node.prototype);
+Letinit.prototype.constructor = Letinit;
+
+Object.defineProperties(Letinit, {
+  'attributes': {get: function() {return ['id', 'type_decl'];}},
+  'node_type': {get: function() {return 'Letinit';}}
+});
+
+Letinit.prototype.children = function () {
+  var children = [];
+  children.push({'name': 'init', 'node': this.init});
   return children;
 }
 

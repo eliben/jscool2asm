@@ -1,5 +1,4 @@
-* Parsing simple atoms works now - strings, integers, etc. Move on to stuff
-  like parsing single identifiers
+* Keep on populating the dispatch functions, then implement actual binary ops.
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 

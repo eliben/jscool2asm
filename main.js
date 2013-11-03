@@ -13,7 +13,10 @@ if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
   //var fileinput = '"hola i am dora"';
-  var fileinput = '{(((foo(1, 2)))); new Foo; ~ not 10; "je"}';
+  var fileinput = '{(((foo(1, 2)))); \n\
+                   let joe : Kooka <- 10, moe : Inr <- "google" in (choochoo);\n\
+                   if new Foo then true else (20);\n\
+                   while ~ not 10 loop 10 pool; "je"}';
 
   //var result = lexer.lex_all(fileinput);
 

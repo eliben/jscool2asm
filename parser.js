@@ -223,11 +223,22 @@ Parser.prototype._parse_parenthesized_expr = function() {
 }
 
 Parser.prototype._parse_if_expr = function() {
-
+  this._match('IF');
+  var pred_expr = this._parse_expression();
+  this._match('THEN');
+  var then_expr = this._parse_expression();
+  this._match('ELSE');
+  var else_expr = this._parse_expression();
+  return new cool_ast.Cond(pred_expr, then_expr, else_expr, pred_expr.loc);
 }
 
 Parser.prototype._parse_while_expr = function() {
-
+  this._match('WHILE');
+  var pred_expr = this._parse_expression();
+  this._match('LOOP');
+  var body_expr = this._parse_expression();
+  this._match('POOL');
+  return new cool_ast.Loop(pred_expr, body_expr, pred_expr.loc);
 }
 
 Parser.prototype._parse_isvoid_expr = function() {
@@ -260,7 +271,32 @@ Parser.prototype._parse_new_expr = function() {
 }
 
 Parser.prototype._parse_let_expr = function() {
+  this._match('LET');
+  var let_inits = [];
+  // First collect the list of initializers into let_inits.
+  while (this.cur_token.name !== 'IN') {
+    var id_tok = this._match('IDENTIFIER');
+    this._match('COLON');
+    var type_decl_tok = this._match('TYPE');
+    var init_node = new cool_ast.NoExpr();
+    if (this.cur_token.name === 'ASSIGN_ARROW') {
+      this._advance();
+      init_node = this._parse_expression();
+    }
+    //console.log(let_inits);
+    //let_inits.push(2);
+    let_inits.push(new cool_ast.Letinit(id_tok.value, type_decl_tok.value,
+                   init_node, id_tok.lineno));
 
+    if (this.cur_token.name === 'COMMA') {
+      this._advance();
+    }
+  }
+  this._advance();
+
+  // Now we can parse the body of the let
+  var body = this._parse_expression();
+  return new cool_ast.Let(let_inits, body, body.loc);
 }
 
 Parser.prototype._parse_case_expr = function() {
@@ -318,4 +354,3 @@ Parser.prototype._parse_dispatch = function(atom) {
     }
   }
 }
-
