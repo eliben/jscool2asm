@@ -79,20 +79,21 @@ var Parser = exports.Parser = function() {
   };
 }
 
-Parser._operator_precedence = {
-  'DOT':          200,
-  'AT':           190,
-  'TILDE':        180,
-  'ISVOID':       170,
-  'MULTIPLY':     160,
-  'DIVIDE':       150,
-  'PLUS':         140,
-  'MINUS':        130,
-  'LEQ':          120,
-  'LE':           110,
-  'EQ':           100,
-  'NOT':          90,
-  'ASSIGN_ARROW': 80
+// Information about operators - kind ('unary', 'binary') and precedence.
+Parser._operator_info = {
+  'DOT':          {kind: 'binary', prec: 200},
+  'AT':           {kind: 'binary', prec: 190},
+  'TILDE':        {kind: 'unary', prec: 180},
+  'ISVOID':       {kind: 'unary', prec: 170},
+  'MULTIPLY':     {kind: 'binary', prec: 160},
+  'DIVIDE':       {kind: 'binary', prec: 150},
+  'PLUS':         {kind: 'binary', prec: 140},
+  'MINUS':        {kind: 'binary', prec: 130},
+  'LEQ':          {kind: 'binary', prec: 120},
+  'LE':           {kind: 'binary', prec: 110},
+  'EQ':           {kind: 'binary', prec: 100},
+  'NOT':          {kind: 'unary', prec: 90},
+  'ASSIGN_ARROW': {kind: 'binary', prec: 80}
 }
 
 // Is this a token that could start a dispatch?
@@ -165,6 +166,9 @@ Parser.prototype._parse_expression = function(min_prec) {
   min_prec = min_prec || -1;
   // Parse until the next binary operator
   var atom_node = this._parse_atom();
+
+  var tok = this.cur_token;
+  //while 
 
   // TODO: zz
   return atom_node;
@@ -257,7 +261,7 @@ Parser.prototype._parse_isvoid_expr = function() {
 Parser.prototype._parse_not_expr = function() {
   var not_tok = this._match('NOT');
   // NOT has to pass forward its precedence so the parsing doesn't go too far.
-  var expr = this._parse_expression(Parser._operator_precedence['NOT']);
+  var expr = this._parse_expression(Parser._operator_info['NOT'].prec);
   return new cool_ast.UnaryOp('NOT', expr, not_tok.lineno);
 }
 
@@ -288,8 +292,6 @@ Parser.prototype._parse_let_expr = function() {
       this._advance();
       init_node = this._parse_expression();
     }
-    //console.log(let_inits);
-    //let_inits.push(2);
     let_inits.push(new cool_ast.Letinit(id_tok.value, type_decl_tok.value,
                                         init_node, id_tok.lineno));
 
