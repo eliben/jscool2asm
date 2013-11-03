@@ -152,8 +152,10 @@ Parser.prototype._parse_program = function() {
 // min_prec: The minimal precedence upcoming binary operators should have to
 // be incorporated into this expression. If a lower-precedence operator is
 // encountered, this method will return the node it has built so far. The same
-// occurs if an expression-ending token is encountered.
+// occurs if an expression-ending token is encountered. When this argument is
+// not given or is falsy (including 0), -1 is used by default.
 Parser.prototype._parse_expression = function(min_prec) {
+  min_prec = min_prec || -1;
   // Parse until the next binary operator
   var atom_node = this._parse_atom();
 
@@ -195,7 +197,8 @@ Parser.prototype._parse_atom = function() {
     this._advance();
     return new cool_ast.BoolConst(false, tok.lineno);
   }
-  return null;
+
+  this._error("Unexpected token while parsing an atom: '" + tok.name + "'");
 }
 
 Parser.prototype._parse_expr_block = function() {
@@ -203,7 +206,10 @@ Parser.prototype._parse_expr_block = function() {
 }
 
 Parser.prototype._parse_parenthesized_expr = function() {
-
+  this._advance();
+  var expr_node = this._parse_expression();
+  this._match('R_PAREN');
+  return expr_node;
 }
 
 Parser.prototype._parse_if_expr = function() {
@@ -268,7 +274,7 @@ Parser.prototype._parse_dispatch = function(atom) {
   this._match('L_PAREN');
   var args = [];
   while (this.cur_token.name !== 'R_PAREN') {
-    args.push(this._parse_expression(-1));
+    args.push(this._parse_expression());
     if (this.cur_token.name === 'COMMA') {
       this._advance();
     }
