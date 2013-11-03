@@ -235,7 +235,10 @@ Parser.prototype._parse_isvoid_expr = function() {
 }
 
 Parser.prototype._parse_not_expr = function() {
-
+  var not_tok = this._match('NOT');
+  // NOT has to pass forward its precedence so the parsing doesn't go too far.
+  var expr = this._parse_expression(Parser._operator_precedence['NOT']);
+  return new cool_ast.UnaryOp('NOT', expr, not_tok.lineno);
 }
 
 Parser.prototype._parse_tilde_expr = function() {
