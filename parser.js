@@ -133,6 +133,13 @@ Parser.prototype._match = function(tokname) {
   }
 }
 
+// Skip the current token if it mathes tokname. Otherwise do nothing.
+Parser.prototype._skip_token = function(tokname) {
+  if (this.cur_token.name === tokname) {
+    this._advance();
+  }
+}
+
 // Throw a parse error with the given message, specifying the lineno of the
 // current token.
 Parser.prototype._error = function(msg) {
@@ -207,9 +214,7 @@ Parser.prototype._parse_expr_block = function() {
   var exprs = [];
   while (this.cur_token.name !== 'R_BRACE') {
     exprs.push(this._parse_expression());
-    if (this.cur_token.name === 'SEMI') {
-      this._advance();
-    }
+    this._skip_token('SEMI');
   }
   this._advance();
   return new cool_ast.Block(exprs, exprs[0].loc);
@@ -288,9 +293,7 @@ Parser.prototype._parse_let_expr = function() {
     let_inits.push(new cool_ast.Letinit(id_tok.value, type_decl_tok.value,
                                         init_node, id_tok.lineno));
 
-    if (this.cur_token.name === 'COMMA') {
-      this._advance();
-    }
+    this._skip_token('COMMA');
   }
   this._advance();
 
@@ -310,9 +313,7 @@ Parser.prototype._parse_case_expr = function() {
     var type_decl_tok = this._match('TYPE');
     this._match('CASE_ARROW');
     var expr_value_node = this._parse_expression();
-    if (this.cur_token.name === 'SEMI') {
-      this._advance();
-    }
+    this._skip_token('SEMI');
     cases.push(new cool_ast.Case(name_tok.value, type_decl_tok.value,
                                  expr_value_node, name_tok.lineno));
   }
@@ -347,9 +348,7 @@ Parser.prototype._parse_dispatch = function(atom) {
   var args = [];
   while (this.cur_token.name !== 'R_PAREN') {
     args.push(this._parse_expression());
-    if (this.cur_token.name === 'COMMA') {
-      this._advance();
-    }
+    this._skip_token('COMMA');
   }
   // Skip the R_PAREN. We're done parsing the dispatch. Now on to building the
   // AST node representing it...
