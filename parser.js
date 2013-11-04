@@ -56,7 +56,6 @@ var ParseError = exports.ParseError = function(message) {
 ParseError.prototype = Object.create(Error.prototype);
 ParseError.prototype.constructor = ParseError;
 
-
 // Parser constructor.
 var Parser = exports.Parser = function() {
   this.lexer = null;
@@ -79,7 +78,21 @@ var Parser = exports.Parser = function() {
   };
 }
 
-// Information about operators - kind ('unary', 'binary') and precedence.
+//---- Parser: public interface
+
+// Parses Cool source code contained in buf and returns the full AST (Program
+// node). In case of an error, throws a ParseError.
+Parser.prototype.parse = function(buf) {
+  this.lexer = new lexer.Lexer();
+  this.lexer.input(buf);
+  this._advance();
+
+  return this._parse_program();
+}
+
+//---- Private implementation details
+
+// Information about operators.
 Parser._operator_info = {
   'DOT':          {kind: 'binary', prec: 200, assoc: 'left'},
   'AT':           {kind: 'binary', prec: 190, assoc: 'left'},
@@ -99,16 +112,6 @@ Parser._operator_info = {
 // Is this a token that could start a dispatch?
 Parser._is_dispatch_token = function(tok) {
   return tok.name === 'AT' || tok.name === 'DOT' || tok.name === 'L_PAREN';
-}
-
-// Parses Cool source code contained in buf and returns the full AST (Program
-// node). In case of an error, throws a ParseError.
-Parser.prototype.parse = function(buf) {
-  this.lexer = new lexer.Lexer();
-  this.lexer.input(buf);
-  this._advance();
-
-  return this._parse_program();
 }
 
 // Return the current token and read the next one into this.cur_token
@@ -146,6 +149,10 @@ Parser.prototype._skip_token = function(tokname) {
 Parser.prototype._error = function(msg) {
   throw new ParseError("Line " + this.cur_token.lineno + ": " + msg);
 }
+
+// The methods below are typical recursive-descent grammar-driving parsing
+// routines. The invariant assumed by each is that this.cur_token is the next
+// token to parse (or null if the buffer ended).
 
 Parser.prototype._parse_program = function() {
   // Class nodes will be collected here

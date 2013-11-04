@@ -9,7 +9,7 @@ var fs = require('fs');
 // The main compiler driver will be here. For now just some sample driving code
 // for the sub-modules.
 
-if (module.parent === null) {
+var testdrive = function() {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
   var fileinput = 'class Main {\n\
@@ -27,6 +27,7 @@ if (module.parent === null) {
     var ast = prsr.parse(fileinput);
     console.log('----> Result:');
     console.log(ast);
+    console.log('----');
     console.log(ast_visitor.dump_ast(ast, true));
   } catch (e) {
     if (e instanceof parser.ParseError) {
@@ -39,5 +40,9 @@ if (module.parent === null) {
     console.log('== Stack trace ==');
     console.log(e.stack);
   }
+}
+
+if (module.parent === null) {
+  testdrive();
 }
 
