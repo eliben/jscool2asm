@@ -103,13 +103,13 @@ Case.prototype.children = function () {
 
 //
 // Class is-a Node
-// Constructor(Class, [Field(identifier, name), Field(identifier, parent), Field(feature, features, seq=True), Field(identifier, filename)])
+// Constructor(Class, [Field(identifier, name), Field(identifier, parent, opt=True), Field(feature, features, seq=True), Field(identifier, filename)])
 //
 var Class = exports.Class = function(name, parent, features, filename, loc) {
   _check_identifier(name);
   this.name = name;
 
-  _check_identifier(parent);
+  parent !== null && _check_identifier(parent);
   this.parent = parent;
 
   _check_array(features);

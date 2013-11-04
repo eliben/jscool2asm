@@ -136,24 +136,27 @@ def emit_class(stream, classname, parentname, constructor):
                 classname, field.name, field.type.capitalize()))
             emit('    }')
             emit('  }')
-        elif field.type == 'identifier':
-            emit('  _check_identifier(%s);' % field.name)
-            attrs.append(field.name)
-        elif field.type == 'string':
-            emit('  _check_string(%s);' % field.name)
-            attrs.append(field.name)
-        elif field.type == 'boolean':
-            emit('  _check_boolean(%s);' % field.name)
-            attrs.append(field.name)
-        elif field.type == 'int':
-            emit('  _check_number(%s);' % field.name)
-            attrs.append(field.name)
         else:
-            emit('  if (!(%s instanceof %s)) {' % (
-                field.name, field.type.capitalize()))
-            emit("    throw new ASTError('%s expects %s to be a %s');" % (
-                classname, field.name, field.type.capitalize()))
-            emit('  }')
+            nullcheck = ('%s !== null && ' % field.name) if field.opt else ''
+
+            if field.type == 'identifier':
+                emit('  %s_check_identifier(%s);' % (nullcheck, field.name))
+                attrs.append(field.name)
+            elif field.type == 'string':
+                emit('  %s_check_string(%s);' % (nullcheck, field.name))
+                attrs.append(field.name)
+            elif field.type == 'boolean':
+                emit('  %s_check_boolean(%s);' % (nullcheck, field.name))
+                attrs.append(field.name)
+            elif field.type == 'int':
+                emit('  %s_check_number(%s);' % (nullcheck, field.name))
+                attrs.append(field.name)
+            else:
+                emit('  if (%s!(%s instanceof %s)) {' % (
+                    nullcheck, field.name, field.type.capitalize()))
+                emit("    throw new ASTError('%s expects %s to be a %s');" % (
+                    classname, field.name, field.type.capitalize()))
+                emit('  }')
         emit('  this.%s = %s;' % (field.name, field.name))
         emit()
     emit('  this.loc = loc;')
@@ -181,8 +184,14 @@ def emit_class(stream, classname, parentname, constructor):
             emit("    children.push(%s);" % child)
             emit("  }")
         elif field.type not in asdl_ast.builtin_types:
-            emit("  children.push({'name': '%s', 'node': this.%s});" % (
-                field.name, field.name))
+            if field.opt:
+                emit("  if (this.%s !== null) {" % field.name)
+                emit("    children.push({'name': '%s', 'node': this.%s});" % (
+                    field.name, field.name))
+                emit("  }")
+            else:
+                emit("  children.push({'name': '%s', 'node': this.%s});" % (
+                    field.name, field.name))
     emit("  return children;")
     emit("}")
     emit()

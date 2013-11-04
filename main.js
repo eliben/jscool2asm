@@ -12,7 +12,7 @@ var fs = require('fs');
 if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
-  var fileinput = '2 * 5 - 8 <- foo;';
+  var fileinput = 'class Main {joe() : Int {2 * 5 - 8;}}';
   //var fileinput = '{(((foo(1, 2) * 4 - 5))); \n\
                    //let joe : Kooka <- 10, moe : Inr <- "google" in (choochoo);\n\
                    //if new Foo then true else (20);\n\

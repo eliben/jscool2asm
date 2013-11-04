@@ -10,7 +10,7 @@ module COOL
 {
     program = Program(class* classes)
 
-    class = Class(identifier name, identifier parent, feature* features,
+    class = Class(identifier name, identifier? parent, feature* features,
                   identifier filename)
 
     feature = Method(identifier name, formal* formals, identifier return_type,

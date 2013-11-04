@@ -1,5 +1,5 @@
-* Keep on populating the dispatch functions, then implement actual binary ops.
 * After that, implement parsing of the top-level stuff (above expression)
+* Write tests for the parser!!
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 

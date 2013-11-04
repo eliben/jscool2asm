@@ -151,8 +151,71 @@ Parser.prototype._parse_program = function() {
   // Class nodes will be collected here
   var classes = [];
 
-  // TODO: hah
-  return this._parse_expression(-1);
+  while (this.cur_token) {
+    classes.push(this._parse_class());
+    this._skip_token('SEMI');
+  }
+
+  return new cool_ast.Program(classes);
+}
+
+Parser.prototype._parse_class = function() {
+  this._match('CLASS');
+  var type_tok = this._match('TYPE');
+  var parent_tok = null;
+  if (this.cur_token.name === 'INHERITS') {
+    this._advance();
+    parent_tok = this._match('TYPE');
+  }
+
+  var features = [];
+  this._match('L_BRACE');
+  while (this.cur_token.name !== 'R_BRACE') {
+    features.push(this._parse_feature());
+    this._skip_token('SEMI');
+  }
+  this._advance();
+
+  var parent_name = parent_tok ? parent_tok.value : null;
+  return new cool_ast.Class(type_tok.value, parent_tok.value, features,
+                            type_tok.loc);
+}
+
+Parser.prototype._parse_feature = function() {
+  var name_tok = this._match('IDENTIFIER');
+  if (this.cur_token.name === 'L_PAREN') {
+    var formals = [];
+    while (this.cur_token.name !== 'R_PAREN') {
+      var name_tok = this._match('IDENTIFIER');
+      this._match('COLON');
+      var type_tok = this._match('TYPE');
+      formals.push(new cool_ast.Formal(name_tok.value, type_tok.value,
+                                       name_tok.lineno));
+      this._skip_token('COMMA');
+    }
+    this._advance();
+
+    this._match('COLON');
+    var return_tok = this._match('TYPE');
+    this._match('L_BRACE');
+    var expr = this._parse_expression();
+    this._match('R_BRACE');
+    return new cool_ast.Method(name_tok.value, formals, return_tok.value,
+                               expr, name_tok.lineno);
+  } else if (this.cur_token.name === 'COLON') {
+    this._advance();
+    var type_tok = this._match('TYPE');
+    var init_node = new cool_ast.NoExpr();
+    if (this.cur_token.name === 'ASSIGN_ARROW') {
+      this._advance();
+      init_node = this._parse_expression();
+    }
+    return new cool_ast.Attr(name_tok.value, type_toc.value, init_node,
+                             name_tok.lineno);
+  } else {
+    this._error("expected a '(' or ':' after feature name, got '" +
+                this.cur_token.name + "'");
+  }
 }
 
 // Parse an expression. This is a precedence-climbing parser, working in tandem
