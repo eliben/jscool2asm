@@ -136,7 +136,7 @@ Parser.prototype._match = function(tokname) {
 
 // Skip the current token if it mathes tokname. Otherwise do nothing.
 Parser.prototype._skip_token = function(tokname) {
-  if (this.cur_token.name === tokname) {
+  if (this.cur_token && this.cur_token.name === tokname) {
     this._advance();
   }
 }
@@ -177,13 +177,14 @@ Parser.prototype._parse_class = function() {
   this._advance();
 
   var parent_name = parent_tok ? parent_tok.value : null;
-  return new cool_ast.Class(type_tok.value, parent_tok.value, features,
-                            type_tok.loc);
+  return new cool_ast.Class(type_tok.value, parent_name, features,
+                            type_tok.lineno);
 }
 
 Parser.prototype._parse_feature = function() {
   var name_tok = this._match('IDENTIFIER');
   if (this.cur_token.name === 'L_PAREN') {
+    this._advance();
     var formals = [];
     while (this.cur_token.name !== 'R_PAREN') {
       var name_tok = this._match('IDENTIFIER');

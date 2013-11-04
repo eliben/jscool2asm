@@ -31,34 +31,34 @@ ASTError.prototype = new Error();
 ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
-var _check_identifier = function(v, who, what) {
+var _check_identifier = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object String]') {
-    throw new ASTError(who + ' expects ' + what + ' to be an identifier');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be an identifier');
   }
 }
 
-var _check_string = function(v, who, what) {
+var _check_string = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object String]' ||
       v[0] !== "\"" || v[v.length - 1] !== "\"") {
-    throw new ASTError(who + ' expects ' + what + ' to be a string');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be a string');
   }
 }
 
-var _check_number = function(v, who, what) {
+var _check_int = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object Number]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a number');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be an int');
   }
 }
 
-var _check_boolean = function(v, who, what) {
+var _check_boolean = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object Boolean]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a boolean');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be a boolean');
   }
 }
 
-var _check_array = function(v, who, what) {
+var _check_array = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object Array]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a array');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be an array');
   }
 }
 
@@ -127,8 +127,14 @@ def emit_class(stream, classname, parentname, constructor):
 
     # Now type-checking and assignment of each constructor argument
     for field in constructor.fields:
+        def make_check_call(ty):
+            s = '_check_' + ty
+            nullcheck = ('%s !== null && ' % field.name) if field.opt else ''
+            emit("  {nullcheck}{s}({field.name}, '{classname}', '{field.name}', loc);".format(
+                nullcheck=nullcheck, s=s, field=field, classname=classname))
+
         if field.seq:
-            emit('  _check_array(%s);' % field.name)
+            make_check_call('array')
             emit('  for (var i = 0; i < %s.length; i++) {' % field.name)
             emit('    if (!(%s[i] instanceof %s)) {' % (
                 field.name, field.type.capitalize()))
@@ -137,21 +143,11 @@ def emit_class(stream, classname, parentname, constructor):
             emit('    }')
             emit('  }')
         else:
-            nullcheck = ('%s !== null && ' % field.name) if field.opt else ''
-
-            if field.type == 'identifier':
-                emit('  %s_check_identifier(%s);' % (nullcheck, field.name))
-                attrs.append(field.name)
-            elif field.type == 'string':
-                emit('  %s_check_string(%s);' % (nullcheck, field.name))
-                attrs.append(field.name)
-            elif field.type == 'boolean':
-                emit('  %s_check_boolean(%s);' % (nullcheck, field.name))
-                attrs.append(field.name)
-            elif field.type == 'int':
-                emit('  %s_check_number(%s);' % (nullcheck, field.name))
+            if field.type in ('identifier', 'string', 'boolean', 'int'):
+                make_check_call(field.type)
                 attrs.append(field.name)
             else:
+                nullcheck = ('%s !== null && ' % field.name) if field.opt else ''
                 emit('  if (%s!(%s instanceof %s)) {' % (
                     nullcheck, field.name, field.type.capitalize()))
                 emit("    throw new ASTError('%s expects %s to be a %s');" % (

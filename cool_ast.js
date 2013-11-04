@@ -18,34 +18,34 @@ ASTError.prototype = new Error();
 ASTError.prototype.constructor = ASTError;
 
 // Some helper code used throughout the module
-var _check_identifier = function(v, who, what) {
+var _check_identifier = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object String]') {
-    throw new ASTError(who + ' expects ' + what + ' to be an identifier');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be an identifier');
   }
 }
 
-var _check_string = function(v, who, what) {
+var _check_string = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object String]' ||
       v[0] !== "\"" || v[v.length - 1] !== "\"") {
-    throw new ASTError(who + ' expects ' + what + ' to be a string');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be a string');
   }
 }
 
-var _check_number = function(v, who, what) {
+var _check_int = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object Number]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a number');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be an int');
   }
 }
 
-var _check_boolean = function(v, who, what) {
+var _check_boolean = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object Boolean]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a boolean');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be a boolean');
   }
 }
 
-var _check_array = function(v, who, what) {
+var _check_array = function(v, who, what, loc) {
   if (Object.prototype.toString.call(v) !== '[object Array]') {
-    throw new ASTError(who + ' expects ' + what + ' to be a array');
+    throw new ASTError('Line ' + loc + ': ' + who + ' expects ' + what + ' to be an array');
   }
 }
 
@@ -73,10 +73,10 @@ Node.node_type = 'Node';
 // Constructor(Case, [Field(identifier, name), Field(identifier, type_decl), Field(expression, expr)])
 //
 var Case = exports.Case = function(name, type_decl, expr, loc) {
-  _check_identifier(name);
+  _check_identifier(name, 'Case', 'name', loc);
   this.name = name;
 
-  _check_identifier(type_decl);
+  _check_identifier(type_decl, 'Case', 'type_decl', loc);
   this.type_decl = type_decl;
 
   if (!(expr instanceof Expression)) {
@@ -103,25 +103,22 @@ Case.prototype.children = function () {
 
 //
 // Class is-a Node
-// Constructor(Class, [Field(identifier, name), Field(identifier, parent, opt=True), Field(feature, features, seq=True), Field(identifier, filename)])
+// Constructor(Class, [Field(identifier, name), Field(identifier, parent, opt=True), Field(feature, features, seq=True)])
 //
-var Class = exports.Class = function(name, parent, features, filename, loc) {
-  _check_identifier(name);
+var Class = exports.Class = function(name, parent, features, loc) {
+  _check_identifier(name, 'Class', 'name', loc);
   this.name = name;
 
-  parent !== null && _check_identifier(parent);
+  parent !== null && _check_identifier(parent, 'Class', 'parent', loc);
   this.parent = parent;
 
-  _check_array(features);
+  _check_array(features, 'Class', 'features', loc);
   for (var i = 0; i < features.length; i++) {
     if (!(features[i] instanceof Feature)) {
       throw new ASTError('Class expects features to be an array of Feature');
     }
   }
   this.features = features;
-
-  _check_identifier(filename);
-  this.filename = filename;
 
   this.loc = loc;
 }
@@ -130,7 +127,7 @@ Class.prototype = Object.create(Node.prototype);
 Class.prototype.constructor = Class;
 
 Object.defineProperties(Class, {
-  'attributes': {get: function() {return ['name', 'parent', 'filename'];}},
+  'attributes': {get: function() {return ['name', 'parent'];}},
   'node_type': {get: function() {return 'Class';}}
 });
 
@@ -157,7 +154,7 @@ Expression.prototype.constructor = Expression
 // Constructor(Assign, [Field(identifier, name), Field(expression, expr)])
 //
 var Assign = exports.Assign = function(name, expr, loc) {
-  _check_identifier(name);
+  _check_identifier(name, 'Assign', 'name', loc);
   this.name = name;
 
   if (!(expr instanceof Expression)) {
@@ -192,13 +189,13 @@ var StaticDispatch = exports.StaticDispatch = function(expr, type_name, name, ac
   }
   this.expr = expr;
 
-  _check_identifier(type_name);
+  _check_identifier(type_name, 'StaticDispatch', 'type_name', loc);
   this.type_name = type_name;
 
-  _check_identifier(name);
+  _check_identifier(name, 'StaticDispatch', 'name', loc);
   this.name = name;
 
-  _check_array(actual);
+  _check_array(actual, 'StaticDispatch', 'actual', loc);
   for (var i = 0; i < actual.length; i++) {
     if (!(actual[i] instanceof Expression)) {
       throw new ASTError('StaticDispatch expects actual to be an array of Expression');
@@ -236,10 +233,10 @@ var Dispatch = exports.Dispatch = function(expr, name, actual, loc) {
   }
   this.expr = expr;
 
-  _check_identifier(name);
+  _check_identifier(name, 'Dispatch', 'name', loc);
   this.name = name;
 
-  _check_array(actual);
+  _check_array(actual, 'Dispatch', 'actual', loc);
   for (var i = 0; i < actual.length; i++) {
     if (!(actual[i] instanceof Expression)) {
       throw new ASTError('Dispatch expects actual to be an array of Expression');
@@ -349,7 +346,7 @@ var Typcase = exports.Typcase = function(expr, cases, loc) {
   }
   this.expr = expr;
 
-  _check_array(cases);
+  _check_array(cases, 'Typcase', 'cases', loc);
   for (var i = 0; i < cases.length; i++) {
     if (!(cases[i] instanceof Case)) {
       throw new ASTError('Typcase expects cases to be an array of Case');
@@ -382,7 +379,7 @@ Typcase.prototype.children = function () {
 // Constructor(Block, [Field(expression, body, seq=True)])
 //
 var Block = exports.Block = function(body, loc) {
-  _check_array(body);
+  _check_array(body, 'Block', 'body', loc);
   for (var i = 0; i < body.length; i++) {
     if (!(body[i] instanceof Expression)) {
       throw new ASTError('Block expects body to be an array of Expression');
@@ -414,7 +411,7 @@ Block.prototype.children = function () {
 // Constructor(Let, [Field(letinit, init, seq=True), Field(expression, body)])
 //
 var Let = exports.Let = function(init, body, loc) {
-  _check_array(init);
+  _check_array(init, 'Let', 'init', loc);
   for (var i = 0; i < init.length; i++) {
     if (!(init[i] instanceof Letinit)) {
       throw new ASTError('Let expects init to be an array of Letinit');
@@ -452,7 +449,7 @@ Let.prototype.children = function () {
 // Constructor(BinaryOp, [Field(identifier, op), Field(expression, left), Field(expression, right)])
 //
 var BinaryOp = exports.BinaryOp = function(op, left, right, loc) {
-  _check_identifier(op);
+  _check_identifier(op, 'BinaryOp', 'op', loc);
   this.op = op;
 
   if (!(left instanceof Expression)) {
@@ -488,7 +485,7 @@ BinaryOp.prototype.children = function () {
 // Constructor(UnaryOp, [Field(identifier, op), Field(expression, expr)])
 //
 var UnaryOp = exports.UnaryOp = function(op, expr, loc) {
-  _check_identifier(op);
+  _check_identifier(op, 'UnaryOp', 'op', loc);
   this.op = op;
 
   if (!(expr instanceof Expression)) {
@@ -518,7 +515,7 @@ UnaryOp.prototype.children = function () {
 // Constructor(IntConst, [Field(int, token)])
 //
 var IntConst = exports.IntConst = function(token, loc) {
-  _check_number(token);
+  _check_int(token, 'IntConst', 'token', loc);
   this.token = token;
 
   this.loc = loc;
@@ -542,7 +539,7 @@ IntConst.prototype.children = function () {
 // Constructor(BoolConst, [Field(boolean, value)])
 //
 var BoolConst = exports.BoolConst = function(value, loc) {
-  _check_boolean(value);
+  _check_boolean(value, 'BoolConst', 'value', loc);
   this.value = value;
 
   this.loc = loc;
@@ -566,7 +563,7 @@ BoolConst.prototype.children = function () {
 // Constructor(StringConst, [Field(string, str)])
 //
 var StringConst = exports.StringConst = function(str, loc) {
-  _check_string(str);
+  _check_string(str, 'StringConst', 'str', loc);
   this.str = str;
 
   this.loc = loc;
@@ -590,7 +587,7 @@ StringConst.prototype.children = function () {
 // Constructor(New, [Field(identifier, type_name)])
 //
 var New = exports.New = function(type_name, loc) {
-  _check_identifier(type_name);
+  _check_identifier(type_name, 'New', 'type_name', loc);
   this.type_name = type_name;
 
   this.loc = loc;
@@ -662,7 +659,7 @@ NoExpr.prototype.children = function () {
 // Constructor(Obj, [Field(identifier, name)])
 //
 var Obj = exports.Obj = function(name, loc) {
-  _check_identifier(name);
+  _check_identifier(name, 'Obj', 'name', loc);
   this.name = name;
 
   this.loc = loc;
@@ -696,10 +693,10 @@ Feature.prototype.constructor = Feature
 // Constructor(Method, [Field(identifier, name), Field(formal, formals, seq=True), Field(identifier, return_type), Field(expression, expr)])
 //
 var Method = exports.Method = function(name, formals, return_type, expr, loc) {
-  _check_identifier(name);
+  _check_identifier(name, 'Method', 'name', loc);
   this.name = name;
 
-  _check_array(formals);
+  _check_array(formals, 'Method', 'formals', loc);
   for (var i = 0; i < formals.length; i++) {
     if (!(formals[i] instanceof Formal)) {
       throw new ASTError('Method expects formals to be an array of Formal');
@@ -707,7 +704,7 @@ var Method = exports.Method = function(name, formals, return_type, expr, loc) {
   }
   this.formals = formals;
 
-  _check_identifier(return_type);
+  _check_identifier(return_type, 'Method', 'return_type', loc);
   this.return_type = return_type;
 
   if (!(expr instanceof Expression)) {
@@ -740,10 +737,10 @@ Method.prototype.children = function () {
 // Constructor(Attr, [Field(identifier, name), Field(identifier, type_decl), Field(expression, init)])
 //
 var Attr = exports.Attr = function(name, type_decl, init, loc) {
-  _check_identifier(name);
+  _check_identifier(name, 'Attr', 'name', loc);
   this.name = name;
 
-  _check_identifier(type_decl);
+  _check_identifier(type_decl, 'Attr', 'type_decl', loc);
   this.type_decl = type_decl;
 
   if (!(init instanceof Expression)) {
@@ -773,10 +770,10 @@ Attr.prototype.children = function () {
 // Constructor(Formal, [Field(identifier, name), Field(identifier, type_decl)])
 //
 var Formal = exports.Formal = function(name, type_decl, loc) {
-  _check_identifier(name);
+  _check_identifier(name, 'Formal', 'name', loc);
   this.name = name;
 
-  _check_identifier(type_decl);
+  _check_identifier(type_decl, 'Formal', 'type_decl', loc);
   this.type_decl = type_decl;
 
   this.loc = loc;
@@ -800,10 +797,10 @@ Formal.prototype.children = function () {
 // Constructor(Letinit, [Field(identifier, id), Field(identifier, type_decl), Field(expression, init)])
 //
 var Letinit = exports.Letinit = function(id, type_decl, init, loc) {
-  _check_identifier(id);
+  _check_identifier(id, 'Letinit', 'id', loc);
   this.id = id;
 
-  _check_identifier(type_decl);
+  _check_identifier(type_decl, 'Letinit', 'type_decl', loc);
   this.type_decl = type_decl;
 
   if (!(init instanceof Expression)) {
@@ -833,7 +830,7 @@ Letinit.prototype.children = function () {
 // Constructor(Program, [Field(class, classes, seq=True)])
 //
 var Program = exports.Program = function(classes, loc) {
-  _check_array(classes);
+  _check_array(classes, 'Program', 'classes', loc);
   for (var i = 0; i < classes.length; i++) {
     if (!(classes[i] instanceof Class)) {
       throw new ASTError('Program expects classes to be an array of Class');

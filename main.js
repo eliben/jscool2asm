@@ -12,25 +12,15 @@ var fs = require('fs');
 if (module.parent === null) {
   var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
 
-  var fileinput = 'class Main {joe() : Int {2 * 5 - 8;}}';
+  var fileinput = 'class Main {\n\
+                    joe() : Int {\n\
+                      2 * 5 - 8}; }';
   //var fileinput = '{(((foo(1, 2) * 4 - 5))); \n\
                    //let joe : Kooka <- 10, moe : Inr <- "google" in (choochoo);\n\
                    //if new Foo then true else (20);\n\
                    //case joe of foo : Foo => 20; joo : Joo => true;  esac\n\
                    //while ~ not 10 loop 10 pool; "je"}';
-
-  //var result = lexer.lex_all(fileinput);
-
-  //if (result.errors.length >= 1) {
-    //for (var i = 0; i < result.errors.length; i++) {
-      //console.log('ERROR', result.errors[i]);
-    //};
-  //}
-
-  //for (var i = 0; i < result.tokens.length; i++) {
-    //console.log(result.tokens[i]);
-  //};
-  //try {
+  try {
     var prsr = new parser.Parser();
     console.log('----> Parsing:');
     console.log(fileinput);
@@ -38,14 +28,16 @@ if (module.parent === null) {
     console.log('----> Result:');
     console.log(ast);
     console.log(ast_visitor.dump_ast(ast, true));
-  //} catch (e) {
-    //if (e instanceof parser.ParseError) {
-      //console.log('Caught ParseError');
-      //console.log(e.message);
-    //} else {
-      //console.log('Caught some other exception');
-      //console.log(e);
-    //}
-  //}
+  } catch (e) {
+    if (e instanceof parser.ParseError) {
+      console.log('Caught ParseError');
+      console.log(e.message);
+    } else {
+      console.log('Caught some other exception');
+      console.log(e);
+    }
+    console.log('== Stack trace ==');
+    console.log(e.stack);
+  }
 }
 

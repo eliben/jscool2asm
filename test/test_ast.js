@@ -24,6 +24,12 @@ var error_tests = function() {
     },
     ast.ASTError);
 
+  try {
+    new ast.Obj(42, 42);
+  } catch (e) {
+    assert.equal(e.message, 'Line 42: Obj expects name to be an identifier');
+  }
+
   assert.throws(
     function() {
       // form instead of [form]
