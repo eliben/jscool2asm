@@ -81,13 +81,19 @@ var Parser = exports.Parser = function() {
 //---- Parser: public interface
 
 // Parses Cool source code contained in buf and returns the full AST (Program
-// node). In case of an error, throws a ParseError.
+// node). Expects to find correct top-level code (a Program, which is a sequence
+// of Classes). In case of an error, throws a ParseError.
 Parser.prototype.parse = function(buf) {
-  this.lexer = new lexer.Lexer();
-  this.lexer.input(buf);
-  this._advance();
-
+  this._reset(buf);
   return this._parse_program();
+}
+
+// Parser a Cool expression contained in buf and returns the AST representing
+// it. This is similar to the parse method, but only handles a single
+// expression. This method exists for testing & convenience.
+Parser.prototype.parse_expression = function(buf) {
+  this._reset(buf);
+  return this._parse_expression();
 }
 
 //---- Private implementation details
@@ -107,6 +113,12 @@ Parser._operator_info = {
   'EQ':           {kind: 'binary', prec: 100, assoc: 'left'},
   'NOT':          {kind: 'unary', prec: 90, assoc: 'left'},
   'ASSIGN_ARROW': {kind: 'binary', prec: 80, assoc: 'right'}
+}
+
+Parser.prototype._reset = function(buf) {
+  this.lexer = new lexer.Lexer();
+  this.lexer.input(buf);
+  this._advance();
 }
 
 // Is this a token that could start a dispatch?

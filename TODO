@@ -1,4 +1,6 @@
-* Write tests for the parser!!
+* Write tests for the parser!! Since expressions are the most interesting thing,
+  how about having a parse_expression public method that provides an official
+  interface into it?
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 
