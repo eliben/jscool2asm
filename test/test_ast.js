@@ -96,7 +96,7 @@ CustomVisitor.prototype.visit_New = function(node) {
 var visitor_tests = function() {
   var attr1 = new ast.Attr('attr1', 'f', new ast.New('int', 8), 10);
   var attr2 = new ast.Attr('attr2', 'ff', new ast.NoExpr(8), 10);
-  var cls = new ast.Class('c', 'p', [attr1, attr2], 'f', 9);
+  var cls = new ast.Class('c', 'p', [attr1, attr2], 9);
 
   var cv = new CustomVisitor();
   cv.visit(cls);
@@ -106,7 +106,7 @@ var visitor_tests = function() {
   var dumper = new ast_visitor.NodeDumper(true);
   var s = dumper.visit(cls);
   assert.deepEqual(s.split("\n"), [
-      "Class(name=c, parent=p, filename=f) @ loc: 9",
+      "Class(name=c, parent=p) @ loc: 9",
       "    Attr(name=attr1, type_decl=f) @ loc: 10",
       "        New(type_name=int) @ loc: 8",
       "    Attr(name=attr2, type_decl=ff) @ loc: 10",

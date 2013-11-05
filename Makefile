@@ -19,6 +19,7 @@ cool_ast.js: cool_ast.asdl tools/asdl_gen_js.py
 test:
 	node test/test_ast.js
 	node test/test_lexer.js
+	node test/test_parser.js
 	@echo "-- Look above for errors. Passing tests are silent."
 
 clean:
