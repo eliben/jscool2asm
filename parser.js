@@ -230,7 +230,7 @@ Parser.prototype._parse_feature = function() {
       this._advance();
       init_node = this._parse_expression();
     }
-    return new cool_ast.Attr(name_tok.value, type_toc.value, init_node,
+    return new cool_ast.Attr(name_tok.value, type_tok.value, init_node,
                              name_tok.lineno);
   } else {
     this._error("expected a '(' or ':' after feature name, got '" +
