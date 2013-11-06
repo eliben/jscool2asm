@@ -7,10 +7,11 @@ var parser = require('../parser');
 var ast = require('../cool_ast')
 var ast_visitor = require('../ast_visitor');
 
-
 var test = function() {
   test_program();
   test_class();
+  test_method();
+  test_attr();
 }
 
 var parse = function(s) {
@@ -21,7 +22,7 @@ var parse = function(s) {
 var test_program = function() {
   // Basic tests for program-level nodes
   var s = 'class Main\n\
-            {joe() : Int {2 * 5 - 8}; }'; 
+            {joe() : Int {2 * 5 - 8}; }';
   var prog = parse(s);
   assert.equal(prog.classes.length, 1);
   assert.equal(prog.classes[0].name, 'Main');
@@ -52,11 +53,11 @@ var test_program = function() {
   assert.equal(prog.classes[99].loc, 199);
 }
 
-var test_class = function() {
-  var _parse_class0 = function(s) {
-    return parse(s).classes[0];
-  }
+var _parse_class0 = function(s) {
+  return parse(s).classes[0];
+}
 
+var test_class = function() {
   // Class-level nodes
   var cls = _parse_class0('class C {at : Int}');
   assert.equal(cls.name, 'C');
@@ -69,6 +70,30 @@ var test_class = function() {
   cls = _parse_class0('class F inherits T {at : Int}');
   assert.equal(cls.name, 'F');
   assert.equal(cls.parent, 'T');
+}
+
+var test_method = function() {
+
+}
+
+// Dumps the AST of ast and compares it to s. The comparison ignores all
+// whitespace in order to be more stable.
+var _compare_ast_dump = function(ast, s) {
+  assert.deepEqual(ast_visitor.dump_ast(ast).split(/\s+/), s.split(/\s+/));
+}
+
+var test_attr = function() {
+  var cls = _parse_class0('class C {at : Int}');
+  assert.equal(cls.features.length, 1);
+
+  var attr = cls.features[0];
+  assert.ok(attr instanceof ast.Attr);
+  assert.equal(attr.name, 'at');
+  assert.equal(attr.type_decl, 'Int');
+  assert.ok(attr.init instanceof ast.NoExpr);
+
+  // from now on we'll be using dump_ast too for easier comparisons
+  _compare_ast_dump(attr, 'Attr(name=at, type_decl=Int) NoExpr()');
 }
 
 if (module.parent === null) {

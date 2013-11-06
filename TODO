@@ -1,6 +1,6 @@
-* Write tests for the parser!! Since expressions are the most interesting thing,
-  how about having a parse_expression public method that provides an official
-  interface into it?
+* Keep writing tests going over the .asdl file: next, tests for features -
+  methods and attributes. Finally after all top-level tests are done, work on
+  tests for expressions.
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 
