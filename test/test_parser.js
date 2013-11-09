@@ -94,6 +94,11 @@ var test_attr = function() {
 
   // from now on we'll be using dump_ast too for easier comparisons
   _compare_ast_dump(attr, 'Attr(name=at, type_decl=Int) NoExpr()');
+
+  cls = _parse_class0('class C {at : Chowbaka <- 2}');
+  attr = cls.features[0];
+  assert.ok(attr.init instanceof ast.IntConst);
+  _compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) IntConst(token=2)');
 }
 
 if (module.parent === null) {
