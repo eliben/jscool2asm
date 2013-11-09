@@ -8,25 +8,27 @@ var ast = require('../cool_ast')
 var ast_visitor = require('../ast_visitor');
 
 var test = function() {
-  try {
-    test_parseerror();
-    test_program();
-    test_class();
-    test_method();
-    test_attr();
-  } catch (e) {
-    if (e instanceof parser.ParseError) {
-      console.log(e.message);
-    } else {
-      console.log(e);
-    }
-    console.log(e.stack);
-  }
+  test_parseerror();
+  test_program();
+  test_class();
+  test_method();
+  test_attr();
 }
 
 var parse = function(s) {
   var p = new parser.Parser();
   return p.parse(s);
+}
+
+// Dumps the AST of ast and compares it to s. The comparison ignores all
+// whitespace in order to be more stable.
+var _compare_ast_dump = function(ast, s) {
+  assert.deepEqual(ast_visitor.dump_ast(ast).split(/\s+/), s.split(/\s+/));
+}
+
+// Helper method for parsing s an returning the first class node.
+var _parse_class0 = function(s) {
+  return parse(s).classes[0];
 }
 
 var test_parseerror = function() {
@@ -75,10 +77,6 @@ var test_program = function() {
   assert.equal(prog.classes[99].loc, 199);
 }
 
-var _parse_class0 = function(s) {
-  return parse(s).classes[0];
-}
-
 var test_class = function() {
   // Class-level nodes
   var cls = _parse_class0('class C {at : Int}');
@@ -95,13 +93,16 @@ var test_class = function() {
 }
 
 var test_method = function() {
+  var cls = _parse_class0('class C {foo() : Int {1}}');
+  var meth = cls.features[0];
+  assert.ok(meth instanceof ast.Method);
+  _compare_ast_dump(meth, 'Method(name=foo, return_type=Int) IntConst(token=1)');
 
-}
-
-// Dumps the AST of ast and compares it to s. The comparison ignores all
-// whitespace in order to be more stable.
-var _compare_ast_dump = function(ast, s) {
-  assert.deepEqual(ast_visitor.dump_ast(ast).split(/\s+/), s.split(/\s+/));
+  cls = _parse_class0('class C {foo(to : Int) : FType {2}}');
+  meth = cls.features[0];
+  assert.equal(meth.formals.length, 1);
+  _compare_ast_dump(meth, 'Method(name=foo, return_type=FType)' +
+                          ' Formal(name=to, type_decl=Int) IntConst(token=2)');
 }
 
 var test_attr = function() {

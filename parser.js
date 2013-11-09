@@ -204,7 +204,7 @@ Parser.prototype._parse_class = function() {
 }
 
 Parser.prototype._parse_feature = function() {
-  var name_tok = this._match('IDENTIFIER');
+  var feature_name_tok = this._match('IDENTIFIER');
   if (this.cur_token.name === 'L_PAREN') {
     this._advance();
     var formals = [];
@@ -223,8 +223,8 @@ Parser.prototype._parse_feature = function() {
     this._match('L_BRACE');
     var expr = this._parse_expression();
     this._match('R_BRACE');
-    return new cool_ast.Method(name_tok.value, formals, return_tok.value,
-                               expr, name_tok.lineno);
+    return new cool_ast.Method(feature_name_tok.value, formals,
+                               return_tok.value, expr, feature_name_tok.lineno);
   } else if (this.cur_token.name === 'COLON') {
     this._advance();
     var type_tok = this._match('TYPE');
@@ -233,8 +233,8 @@ Parser.prototype._parse_feature = function() {
       this._advance();
       init_node = this._parse_expression();
     }
-    return new cool_ast.Attr(name_tok.value, type_tok.value, init_node,
-                             name_tok.lineno);
+    return new cool_ast.Attr(feature_name_tok.value, type_tok.value, init_node,
+                             feature_name_tok.lineno);
   } else {
     this._error("expected a '(' or ':' after feature name, got '" +
                 this.cur_token.name + "'");
