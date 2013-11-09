@@ -8,15 +8,37 @@ var ast = require('../cool_ast')
 var ast_visitor = require('../ast_visitor');
 
 var test = function() {
-  test_program();
-  test_class();
-  test_method();
-  test_attr();
+  try {
+    test_parseerror();
+    test_program();
+    test_class();
+    test_method();
+    test_attr();
+  } catch (e) {
+    if (e instanceof parser.ParseError) {
+      console.log(e.message);
+    } else {
+      console.log(e);
+    }
+    console.log(e.stack);
+  }
 }
 
 var parse = function(s) {
   var p = new parser.Parser();
   return p.parse(s);
+}
+
+var test_parseerror = function() {
+  // Sanity check for ParseError
+  try {
+    throw new parser.ParseError('foobar');
+  } catch (e) {
+    assert.ok(e instanceof parser.ParseError);
+    assert.ok(e instanceof Error);
+    assert.equal(e.message, 'foobar');
+    assert.equal(e.stack.indexOf('Error: foobar\n    at test_parseerror'), 0);
+  }
 }
 
 var test_program = function() {
@@ -95,10 +117,17 @@ var test_attr = function() {
   // from now on we'll be using dump_ast too for easier comparisons
   _compare_ast_dump(attr, 'Attr(name=at, type_decl=Int) NoExpr()');
 
+  // simple initializer for an attribute
   cls = _parse_class0('class C {at : Chowbaka <- 2}');
   attr = cls.features[0];
   assert.ok(attr.init instanceof ast.IntConst);
   _compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) IntConst(token=2)');
+
+  // a somewhat more complex initializer
+  //cls = _parse_class0('class C {at : Chowbaka <- if 2 then 3 else ((4)) fi}');
+  //attr = cls.features[0];
+  //assert.ok(attr.init instanceof ast.Cond);
+  //_compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) IntConst(token=2)');
 }
 
 if (module.parent === null) {

@@ -50,6 +50,9 @@ var cool_ast = require('./cool_ast');
 
 // ParseError is the exception type used by this module to signal errors
 var ParseError = exports.ParseError = function(message) {
+  // This call is required to make sure the .stack property of ParseError is
+  // properly carried around.
+  Error.captureStackTrace(this, ParseError);
   this.message = message;
 }
 
