@@ -1,7 +1,6 @@
 * Keep writing tests going over the .asdl file: next, tests for features -
   methods and attributes. Finally after all top-level tests are done, work on
   tests for expressions.
-* Need to test that ParseError behaves as Error (has stack, message...)
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 

@@ -124,10 +124,11 @@ var test_attr = function() {
   _compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) IntConst(token=2)');
 
   // a somewhat more complex initializer
-  //cls = _parse_class0('class C {at : Chowbaka <- if 2 then 3 else ((4)) fi}');
-  //attr = cls.features[0];
-  //assert.ok(attr.init instanceof ast.Cond);
-  //_compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) IntConst(token=2)');
+  cls = _parse_class0('class C {at : Chowbaka <- if 2 then 3 else ((4)) fi}');
+  attr = cls.features[0];
+  assert.ok(attr.init instanceof ast.Cond);
+  _compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) ' +
+                          ' Cond() IntConst(token=2) IntConst(token=3) IntConst(token=4)');
 }
 
 if (module.parent === null) {

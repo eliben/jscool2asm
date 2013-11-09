@@ -344,6 +344,7 @@ Parser.prototype._parse_if_expr = function() {
   var then_expr = this._parse_expression();
   this._match('ELSE');
   var else_expr = this._parse_expression();
+  this._match('FI');
   return new cool_ast.Cond(pred_expr, then_expr, else_expr, pred_expr.loc);
 }
 
