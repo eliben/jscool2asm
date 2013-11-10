@@ -7,6 +7,10 @@ var parser = require('../parser');
 var ast = require('../cool_ast')
 var ast_visitor = require('../ast_visitor');
 
+var MultiString = function(f) {
+  return f.toString().split('\n').slice(1, -1).join('\n');
+}
+
 var test = function() {
   test_parseerror();
   test_program();
@@ -90,6 +94,69 @@ var test_class = function() {
   cls = _parse_class0('class F inherits T {at : Int}');
   assert.equal(cls.name, 'F');
   assert.equal(cls.parent, 'T');
+
+  // A relatively complete class with multiple attributes and methods. Taken
+  // from the Cool samples directory (lambda calculus program)
+  cls = _parse_class0(MultiString(function() {/***
+class LambdaListNE inherits LambdaList {
+  lam : Lambda;
+  num : Int;
+  env : VarList;
+  rest : LambdaList;
+  isNil() : Bool { false };
+  headE() : VarList { env };
+  headC() : Lambda { lam };
+  headN() : Int { num };
+  tail()  : LambdaList { rest };
+  init(e : VarList, l : Lambda, n : Int, r : LambdaList) : LambdaListNE {
+    {
+      env <- e;
+      lam <- l;
+      num <- n;
+      rest <- r;
+      self;
+    }
+  };
+};
+***/}));
+  assert.equal(cls.name, 'LambdaListNE');
+  assert.equal(cls.parent, 'LambdaList');
+  assert.equal(cls.features.length, 10);
+
+  // Define a custom visitor to look at the features
+  var ClsVisitor = function() {
+    this.num_attrs = this.num_methods = this.num_formals = 0;
+    this.decltypes = [];
+  }
+
+  ClsVisitor.prototype = Object.create(ast_visitor.NodeVisitor.prototype);
+  ClsVisitor.constructor = ClsVisitor;
+
+  ClsVisitor.prototype.visit_Attr = function(node) {
+    this.num_attrs += 1;
+    this.decltypes.push(node.type_decl);
+  }
+
+  ClsVisitor.prototype.visit_Method = function(node) {
+    this.num_methods += 1;
+    this.decltypes.push(node.return_type);
+    this.visit_children(node);
+  }
+
+  ClsVisitor.prototype.visit_Formal = function(node) {
+    this.num_formals += 1;
+    this.decltypes.push(node.type_decl);
+  }
+
+  var cv = new ClsVisitor();
+  cv.visit(cls);
+  assert.equal(cv.num_formals, 4);
+  assert.equal(cv.num_attrs, 4);
+  assert.equal(cv.num_methods, 6);
+  assert.deepEqual(cv.decltypes, [
+      'Lambda', 'Int', 'VarList', 'LambdaList', 'Bool', 'VarList', 'Lambda',
+      'Int', 'LambdaList', 'LambdaListNE', 'VarList', 'Lambda', 'Int',
+      'LambdaList']);
 }
 
 var test_method = function() {
@@ -103,6 +170,15 @@ var test_method = function() {
   assert.equal(meth.formals.length, 1);
   _compare_ast_dump(meth, 'Method(name=foo, return_type=FType)' +
                           ' Formal(name=to, type_decl=Int) IntConst(token=2)');
+
+  cls = _parse_class0('class C {foo(x : Int, y : Bool) : SELF_TYPE {' +
+                      ' {1; 2}}}');
+  meth = cls.features[0];
+  assert.equal(meth.return_type, 'SELF_TYPE');
+  assert.equal(meth.formals.length, 2);
+  _compare_ast_dump(meth.formals[0], 'Formal(name=x, type_decl=Int)');
+  _compare_ast_dump(meth.formals[1], 'Formal(name=y, type_decl=Bool)');
+  _compare_ast_dump(meth.expr, 'Block() IntConst(token=1) IntConst(token=2)');
 }
 
 var test_attr = function() {
