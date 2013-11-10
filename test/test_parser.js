@@ -6,10 +6,7 @@ var assert = require('assert');
 var parser = require('../parser');
 var ast = require('../cool_ast')
 var ast_visitor = require('../ast_visitor');
-
-var MultiString = function(f) {
-  return f.toString().split('\n').slice(1, -1).join('\n');
-}
+var utils = require('../utils');
 
 var test = function() {
   test_parseerror();
@@ -97,7 +94,7 @@ var test_class = function() {
 
   // A relatively complete class with multiple attributes and methods. Taken
   // from the Cool samples directory (lambda calculus program)
-  cls = _parse_class0(MultiString(function() {/***
+  cls = _parse_class0(utils.MultiString(function() {/***
 class LambdaListNE inherits LambdaList {
   lam : Lambda;
   num : Int;
