@@ -10,7 +10,7 @@ var fs = require('fs');
 // for the sub-modules.
 
 var testdrive = function() {
-  var fileinput = fs.readFileSync('cool_code_samples/test.cl', 'utf8');
+  var fileinput = fs.readFileSync('cool_code_samples/lam.cl', 'utf8');
 
   //var fileinput = 'class C {at : Chowbaka <- if 2 then 3 else ((4)) fi}';
   //var fileinput = '{(((foo(1, 2) * 4 - 5))); \n\

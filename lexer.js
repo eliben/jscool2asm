@@ -27,7 +27,7 @@
 //  OF, NEW, ISVOID, NOT, LET, TRUE, FALSE
 //
 // Comments and whitespace are skipped by the lexer - not reported as tokens.
-// Strings may contain newlines escaped with '\'.
+// Strings may contain newlines and other chars escaped with '\'.
 //
 
 var Lexer = exports.Lexer = function() {
@@ -283,8 +283,13 @@ Lexer.prototype._process_string = function() {
   // this.lineno may advance while going through the string. Preserve the
   // original for proper reporting for the string token.
   var string_lineno = this.lineno;
-  // this.pos points at the opening quote. Find the ending quote.
-  var end_index = this.buf.indexOf('"', this.pos + 1);
+
+  // this.pos points at the opening quote. Find the ending quote, retrying if
+  // an escaped quote is found.
+  var end_index = this.pos;
+  do {
+    end_index = this.buf.indexOf('"', end_index + 1);
+  } while (this.buf.charAt(end_index - 1) === '\\');
 
   if (end_index === -1) {
     this._add_error('Unterminated string');

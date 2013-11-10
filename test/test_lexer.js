@@ -97,6 +97,10 @@ var test = function() {
     { name: 'STRING', value: '"in a string \\\nand next line"', pos: 2, lineno: 1},
     { name: 'IDENTIFIER', value: 'too', pos: 32, lineno: 2 }]);
 
+  assert_lexer_tokens('x "here is a \\" quote in a string"', [
+    { name: 'IDENTIFIER', value: 'x', pos: 0, lineno: 1},
+    { name: 'STRING', value: '"here is a \\" quote in a string"'}]);
+
   assert_lexer_errors('"ffa\n2', ['Line 1: Unterminated string']);
   assert_lexer_errors('x "in a string \nand next line" too', [
     'Line 1: Unescaped newline inside a string']);
