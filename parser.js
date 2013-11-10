@@ -103,7 +103,7 @@ Parser.prototype.parse_expression = function(buf) {
 
 // Information about operators.
 Parser._operator_info = {
-  'DOT':          {kind: 'binary', prec: 200, assoc: 'left'},
+  'PERIOD':       {kind: 'binary', prec: 200, assoc: 'left'},
   'AT':           {kind: 'binary', prec: 190, assoc: 'left'},
   'TILDE':        {kind: 'unary', prec: 180, assoc: 'left'},
   'ISVOID':       {kind: 'unary', prec: 170, assoc: 'left'},
@@ -126,7 +126,7 @@ Parser.prototype._reset = function(buf) {
 
 // Is this a token that could start a dispatch?
 Parser._is_dispatch_token = function(tok) {
-  return tok.name === 'AT' || tok.name === 'DOT' || tok.name === 'L_PAREN';
+  return tok.name === 'AT' || tok.name === 'PERIOD' || tok.name === 'L_PAREN';
 }
 
 // Return the current token and read the next one into this.cur_token
@@ -441,12 +441,12 @@ Parser.prototype._parse_dispatch = function(atom) {
     // Static dispatch. Expect a type to follow, and then a '.'
     this._advance();
     type_tok = this._match('TYPE');
-    if (this.cur_token.name === 'DOT') {
+    if (this.cur_token.name === 'PERIOD') {
       this._error("expected a '.' after @ dispatch, got '" +
                   this.cur_token.name + "'");
     }
   }
-  if (tok.name === 'DOT') {
+  if (tok.name === 'PERIOD') {
     this._advance();
     name_tok = this._match('IDENTIFIER');
   }

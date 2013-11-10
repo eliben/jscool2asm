@@ -11,6 +11,7 @@
 
 // ASTError is the exception type used by this module to signal errors
 var ASTError = exports.ASTError = function(message) {
+  Error.captureStackTrace(this, ASTError);
   this.message = message;
 }
 
