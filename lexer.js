@@ -167,6 +167,21 @@ Lexer._isalphanum = function(c) {
   return Lexer._isdigit(c) || Lexer._isalpha(c);
 }
 
+// The char s[idx] is escaped if it's preceded by an odd number of backslashes.
+Lexer._char_is_escaped = function(s, idx) {
+  var i = idx - 1;
+  var escaped = false;
+  while (i >= 0) {
+    if (s.charAt(i) === '\\') {
+      escaped = !escaped;
+    } else {
+      break;
+    }
+    i--;
+  }
+  return escaped;
+}
+
 Lexer.prototype._add_error = function(str) {
   this.errors.push('Line ' + this.lineno.toString() + ': ' + str);
 }
@@ -289,7 +304,7 @@ Lexer.prototype._process_string = function() {
   var end_index = this.pos;
   do {
     end_index = this.buf.indexOf('"', end_index + 1);
-  } while (this.buf.charAt(end_index - 1) === '\\');
+  } while (Lexer._char_is_escaped(this.buf, end_index));
 
   if (end_index === -1) {
     this._add_error('Unterminated string');

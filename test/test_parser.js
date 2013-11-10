@@ -14,11 +14,17 @@ var test = function() {
   test_class();
   test_method();
   test_attr();
+  test_expressions();
 }
 
 var parse = function(s) {
   var p = new parser.Parser();
   return p.parse(s);
+}
+
+var parse_expr = function(s) {
+  var p = new parser.Parser();
+  return p.parse_expression(s);
 }
 
 // Dumps the AST of ast and compares it to s. The comparison ignores all
@@ -203,6 +209,18 @@ var test_attr = function() {
   assert.ok(attr.init instanceof ast.Cond);
   _compare_ast_dump(attr, 'Attr(name=at, type_decl=Chowbaka) ' +
                           ' Cond() IntConst(token=2) IntConst(token=3) IntConst(token=4)');
+}
+
+var test_expressions = function() {
+  var e = parse_expr('out_string("((new Closure")');
+  assert.ok(e instanceof ast.Dispatch);
+  assert.equal(e.name, 'out_string');
+  assert.equal(e.actual[0].str, '"((new Closure"');
+
+  e = parse_expr('{out_string("((new Closure");}');
+  assert.ok(e instanceof ast.Block);
+  assert.equal(e.body.length, 1);
+  assert.equal(e.body[0].name, 'out_string');
 }
 
 if (module.parent === null) {

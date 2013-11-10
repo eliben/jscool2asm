@@ -12,6 +12,7 @@ var lexer = require('../lexer');
 var assert_lexer_tokens = function(str, expected_toks) {
   var result = lexer.lex_all(str);
   if (result.tokens.length !== expected_toks.length) {
+    console.log(result.tokens);
     assert.deepEqual(result.tokens, expected_toks);
   }
 
@@ -100,6 +101,18 @@ var test = function() {
   assert_lexer_tokens('x "here is a \\" quote in a string"', [
     { name: 'IDENTIFIER', value: 'x', pos: 0, lineno: 1},
     { name: 'STRING', value: '"here is a \\" quote in a string"'}]);
+
+  assert_lexer_tokens('x "ends string \\\\"  "new string"', [
+    { name: 'IDENTIFIER', value: 'x', pos: 0, lineno: 1},
+    { name: 'STRING', value: '"ends string \\\\"'},
+    { name: 'STRING', value: '"new string"'}]);
+
+  assert_lexer_tokens('out_string("((new Closure");', [
+    { name: 'IDENTIFIER', value: 'out_string', pos: 0, lineno: 1 },
+    { name: 'L_PAREN', value: '(', pos: 10, lineno: 1 },
+    { name: 'STRING', value: '"((new Closure"', pos: 11, lineno: 1 },
+    { name: 'R_PAREN', value: ')', pos: 26, lineno: 1 },
+    { name: 'SEMI', value: ';', pos: 27, lineno: 1 }]);
 
   assert_lexer_errors('"ffa\n2', ['Line 1: Unterminated string']);
   assert_lexer_errors('x "in a string \nand next line" too', [
