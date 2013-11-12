@@ -296,7 +296,7 @@ Parser.prototype._parse_atom = function() {
     this._advance();
 
     // This can be a dispatch.
-    if (Parser._is_dispatch_token(this.cur_token)) {
+    if (this.cur_token && Parser._is_dispatch_token(this.cur_token)) {
       return this._parse_dispatch(id_node);
     }
 

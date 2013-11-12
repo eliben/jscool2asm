@@ -212,6 +212,18 @@ var test_attr = function() {
 }
 
 var test_expressions = function() {
+  test_expr_atoms();
+  test_expr_misc();
+}
+
+var test_expr_atoms = function() {
+  var e = parse_expr('foo');
+  _compare_ast_dump(e, 'Obj(name=foo)');
+  //console.log(ast_visitor.dump_ast(e));
+}
+
+// Miscellaneous expression tests for bugs that come up, etc.
+var test_expr_misc = function() {
   var e = parse_expr('out_string("((new Closure")');
   assert.ok(e instanceof ast.Dispatch);
   assert.equal(e.name, 'out_string');
