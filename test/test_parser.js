@@ -212,14 +212,33 @@ var test_attr = function() {
 }
 
 var test_expressions = function() {
-  test_expr_atoms();
+  test_expr_basic_atoms();
+  test_expr_blocks();
   test_expr_misc();
 }
 
-var test_expr_atoms = function() {
+var test_expr_basic_atoms = function() {
   var e = parse_expr('foo');
   _compare_ast_dump(e, 'Obj(name=foo)');
+
+  e = parse_expr('40');
+  _compare_ast_dump(e, 'IntConst(token=40)');
+
+  e = parse_expr('false');
+  _compare_ast_dump(e, 'BoolConst(value=false)');
+
+  e = parse_expr('true');
+  _compare_ast_dump(e, 'BoolConst(value=true)');
+
+  e = parse_expr('(a)');
+  _compare_ast_dump(e, 'Obj(name=a)');
+
   //console.log(ast_visitor.dump_ast(e));
+}
+
+var test_expr_blocks = function() {
+  var e = parse_expr('{1; 2; 3;}');
+  _compare_ast_dump(e, 'Block() IntConst(token=1) IntConst(token=2) IntConst(token=3)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.
