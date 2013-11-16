@@ -1,4 +1,4 @@
-// Unit tests for the Cool lexer
+// Unit tests for the Cool parser
 
 'use strict';
 
@@ -233,12 +233,19 @@ var test_expr_basic_atoms = function() {
   e = parse_expr('(a)');
   _compare_ast_dump(e, 'Obj(name=a)');
 
+  e = parse_expr('"a string"');
+  assert.ok(e instanceof ast.StringConst);
+  assert.equal(e.str, '"a string"');
+
   //console.log(ast_visitor.dump_ast(e));
 }
 
 var test_expr_blocks = function() {
   var e = parse_expr('{1; 2; 3;}');
   _compare_ast_dump(e, 'Block() IntConst(token=1) IntConst(token=2) IntConst(token=3)');
+
+  e = parse_expr('{foo;}');
+  _compare_ast_dump(e, 'Block() Obj(name=foo)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.
@@ -252,6 +259,9 @@ var test_expr_misc = function() {
   assert.ok(e instanceof ast.Block);
   assert.equal(e.body.length, 1);
   assert.equal(e.body[0].name, 'out_string');
+
+  e = parse_expr('new Foo');
+  _compare_ast_dump(e, 'New(type_name=Foo)');
 }
 
 if (module.parent === null) {
