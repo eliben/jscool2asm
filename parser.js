@@ -474,9 +474,9 @@ Parser.prototype._parse_dispatch = function(atom) {
                                  args, atom.loc);
   } else {
     if (type_tok === null) {
-      return new cool_ast.Dispatch(atom, name_tok.name, args, atom.loc)
+      return new cool_ast.Dispatch(atom, name_tok.value, args, atom.loc)
     } else {
-      return new cool_ast.StaticDispatch(atom, name_tok.name, args, atom.loc);
+      return new cool_ast.StaticDispatch(atom, name_tok.value, args, atom.loc);
     }
   }
 }

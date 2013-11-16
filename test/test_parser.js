@@ -214,6 +214,7 @@ var test_attr = function() {
 var test_expressions = function() {
   test_expr_basic_atoms();
   test_expr_blocks();
+  test_expr_dispatch();
   test_expr_misc();
 }
 
@@ -246,6 +247,14 @@ var test_expr_blocks = function() {
 
   e = parse_expr('{foo;}');
   _compare_ast_dump(e, 'Block() Obj(name=foo)');
+}
+
+var test_expr_dispatch = function() {
+  var e = parse_expr('foo(bar)');
+  _compare_ast_dump(e, 'Dispatch(name=foo) NoExpr() Obj(name=bar)');
+
+  e = parse_expr('joe.foo(bar)');
+  _compare_ast_dump(e, 'Dispatch(name=foo) Obj(name=joe) Obj(name=bar)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.
