@@ -255,6 +255,9 @@ var test_expr_dispatch = function() {
 
   e = parse_expr('joe.foo(bar)');
   _compare_ast_dump(e, 'Dispatch(name=foo) Obj(name=joe) Obj(name=bar)');
+
+  e = parse_expr('joe@Klass.foo(bar)');
+  _compare_ast_dump(e, 'StaticDispatch(type_name=Klass, name=foo) Obj(name=joe) Obj(name=bar)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.

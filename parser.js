@@ -434,19 +434,18 @@ Parser.prototype._parse_case_expr = function() {
 // Parse a dispatch. We know that the current token begins a dispatch, and atom
 // is the already parsed 'expr' child node of the dispatch.
 Parser.prototype._parse_dispatch = function(atom) {
-  var tok = this.cur_token;
   var type_tok = null;
   var name_tok = null;
-  if (tok.name === 'AT') {
+  if (this.cur_token.name === 'AT') {
     // Static dispatch. Expect a type to follow, and then a '.'
     this._advance();
     type_tok = this._match('TYPE');
-    if (this.cur_token.name === 'PERIOD') {
+    if (this.cur_token.name !== 'PERIOD') {
       this._error("expected a '.' after @ dispatch, got '" +
                   this.cur_token.name + "'");
     }
   }
-  if (tok.name === 'PERIOD') {
+  if (this.cur_token.name === 'PERIOD') {
     this._advance();
     name_tok = this._match('IDENTIFIER');
   }
@@ -476,7 +475,8 @@ Parser.prototype._parse_dispatch = function(atom) {
     if (type_tok === null) {
       return new cool_ast.Dispatch(atom, name_tok.value, args, atom.loc)
     } else {
-      return new cool_ast.StaticDispatch(atom, name_tok.value, args, atom.loc);
+      return new cool_ast.StaticDispatch(atom, type_tok.value,
+                                         name_tok.value, args, atom.loc);
     }
   }
 }
