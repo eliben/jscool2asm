@@ -38,6 +38,14 @@ var _parse_class0 = function(s) {
   return parse(s).classes[0];
 }
 
+var assert_parse_error = function(code, msg) {
+  assert.throws(
+    function() {
+      var e = parse_expr(code);
+    },
+    parser.ParseError, msg);
+}
+
 var test_parseerror = function() {
   // Sanity check for ParseError
   try {
@@ -272,7 +280,8 @@ var test_expr_dispatch = function() {
   e = parse_expr('(new Foo)@Typ.foo(bar, baz)');
   _compare_ast_dump(e, 'StaticDispatch(type_name=Typ, name=foo) New(type_name=Foo) Obj(name=bar) Obj(name=baz)');
 
-  //e = parse_expr('(new Foo)@Typ@Typ2.foo(bar, baz)');
+  // But @s can't be cascaded.
+  assert_parse_error('(new Foo)@Typ@Typ2.foo(bar, baz)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.
