@@ -223,6 +223,8 @@ var test_expressions = function() {
   test_expr_basic_atoms();
   test_expr_blocks();
   test_expr_dispatch();
+  test_expr_ops();
+  test_expr_statements();
   test_expr_misc();
 }
 
@@ -282,6 +284,45 @@ var test_expr_dispatch = function() {
 
   // But @s can't be cascaded.
   assert_parse_error('(new Foo)@Typ@Typ2.foo(bar, baz)');
+}
+
+var test_expr_ops = function() {
+  var e = parse_expr('2 + 3 - foo');
+  //console.log(ast_visitor.dump_ast(e));
+  _compare_ast_dump(e, 'BinaryOp(op=-) BinaryOp(op=+) IntConst(token=2) IntConst(token=3) Obj(name=foo)');
+
+  e = parse_expr('2 * 3 - foo');
+  _compare_ast_dump(e, 'BinaryOp(op=-) BinaryOp(op=*) IntConst(token=2) IntConst(token=3) Obj(name=foo)');
+
+  e = parse_expr('foo <- 2 + 3');
+  _compare_ast_dump(e, 'BinaryOp(op=<-) Obj(name=foo) BinaryOp(op=+) IntConst(token=2) IntConst(token=3)');
+
+  e = parse_expr('2 - 3 * foo');
+  _compare_ast_dump(e, 'BinaryOp(op=-) IntConst(token=2) BinaryOp(op=*) IntConst(token=3) Obj(name=foo)');
+
+  e = parse_expr('2 + 3 * 4 - 8 / 5 + 1');
+  _compare_ast_dump(e, 'BinaryOp(op=-) BinaryOp(op=+) IntConst(token=2) BinaryOp(op=*) IntConst(token=3) IntConst(token=4) BinaryOp(op=+) BinaryOp(op=/) IntConst(token=8) IntConst(token=5) IntConst(token=1)');
+
+  e = parse_expr('isvoid foo = not bar');
+  _compare_ast_dump(e, 'BinaryOp(op==) IsVoid() Obj(name=foo) UnaryOp(op=NOT) Obj(name=bar)');
+
+  e = parse_expr('2 * ~ 3 - foo');
+  _compare_ast_dump(e, 'BinaryOp(op=-) BinaryOp(op=*) IntConst(token=2) UnaryOp(op=~) IntConst(token=3) Obj(name=foo)');
+}
+
+var test_expr_statements = function() {
+  var e = parse_expr('if foo then bar else baz fi');
+  _compare_ast_dump(e, 'Cond() Obj(name=foo) Obj(name=bar) Obj(name=baz)');
+  //console.log(ast_visitor.dump_ast(e));
+
+  e = parse_expr('while foo loop bar pool');
+  _compare_ast_dump(e, 'Loop() Obj(name=foo) Obj(name=bar)');
+
+  e = parse_expr('case foo of x : Xoo => x; y : Yoo => y; esac');
+  _compare_ast_dump(e, 'Typcase() Obj(name=foo) Case(name=x, type_decl=Xoo) Obj(name=x) Case(name=y, type_decl=Yoo) Obj(name=y)');
+
+  e = parse_expr('let foo : Foo <- 2, bar : Int <- 8 in foo - bar');
+  _compare_ast_dump(e, 'Let() Letinit(id=foo, type_decl=Foo) IntConst(token=2) Letinit(id=bar, type_decl=Int) IntConst(token=8) BinaryOp(op=-) Obj(name=foo) Obj(name=bar)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.
