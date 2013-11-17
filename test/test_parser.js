@@ -257,11 +257,22 @@ var test_expr_dispatch = function() {
   e = parse_expr('joe@Klass.foo(bar)');
   _compare_ast_dump(e, 'StaticDispatch(type_name=Klass, name=foo) Obj(name=joe) Obj(name=bar)');
 
+  // The following are more complex dispatches, where the dispatch is made on
+  // a whole expression as opposed to a simple object name.
   e = parse_expr('(new Foo).foo(bar, baz)');
   _compare_ast_dump(e, 'Dispatch(name=foo) New(type_name=Foo) Obj(name=bar) Obj(name=baz)');
 
+  e = parse_expr('(2 + 3).foo(bar, baz)');
+  _compare_ast_dump(e, 'Dispatch(name=foo) BinaryOp(op=+) IntConst(token=2) IntConst(token=3) Obj(name=bar) Obj(name=baz)');
+
+  // Cascaded dispatch works too, and make sure it is right-associative...
   e = parse_expr('(new Foo).foo(bar, baz).kwa(2)');
   _compare_ast_dump(e, 'Dispatch(name=kwa) Dispatch(name=foo) New(type_name=Foo) Obj(name=bar) Obj(name=baz) IntConst(token=2)');
+
+  e = parse_expr('(new Foo)@Typ.foo(bar, baz)');
+  _compare_ast_dump(e, 'StaticDispatch(type_name=Typ, name=foo) New(type_name=Foo) Obj(name=bar) Obj(name=baz)');
+
+  //e = parse_expr('(new Foo)@Typ@Typ2.foo(bar, baz)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.

@@ -275,6 +275,8 @@ Parser.prototype._parse_expression = function(min_prec) {
       // Create a better AST node for dispatches
       if (op_tok.name === 'PERIOD') {
         result_node = this._fixup_binary_dispatch(result_node);
+      } else if (op_tok.name === 'AT') {
+        result_node = this._fixup_binary_static_dispatch(result_node);
       }
     } else {
       break;
@@ -305,6 +307,9 @@ Parser.prototype._parse_atom = function() {
     }
 
     return id_node;
+  } else if (tok.name === 'TYPE') {
+    this._advance();
+    return new cool_ast.Obj(tok.value, tok.lineno);
   } else if (tok.name === 'NUMBER') {
     this._advance();
     return new cool_ast.IntConst(parseInt(tok.value, 10), tok.lineno);
@@ -495,3 +500,16 @@ Parser.prototype._fixup_binary_dispatch = function(binop) {
   return new cool_ast.Dispatch(binop.left, binop.right.name, binop.right.actual,
                                binop.loc);
 }
+
+// When an expression is dispatched on statically with a @, it's interpreted
+// as a binary operator. Create a proper StaticDispatch node instead.
+Parser.prototype._fixup_binary_static_dispatch = function(binop) {
+  //if (
+  if (!(binop.right instanceof cool_ast.Dispatch) ||
+      !(binop.right.expr instanceof cool_ast.Obj)) {
+    this._error("invalid static dispatch");
+  }
+  return new cool_ast.StaticDispatch(binop.left, binop.right.expr.name,
+                                     binop.right.name, binop.right.actual);
+}
+
