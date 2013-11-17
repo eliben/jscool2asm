@@ -1,7 +1,5 @@
-* Next: implement the fixup (and proper parsing) for (new Foo)@Bar.foo(bar, baz)
-* Keep writing tests going over the .asdl file: next, tests for features -
-  methods and attributes. Finally after all top-level tests are done, work on
-  tests for expressions.
+* Enough unit testing for parser? Later will have some framework for testing
+  whole programs anyway...
 * Write simple test discovery in test/all_tests.js and just run that from the
   makefile.
 
