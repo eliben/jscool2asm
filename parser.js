@@ -272,6 +272,10 @@ Parser.prototype._parse_expression = function(min_prec) {
       // Build the BinaryOp node to represent the result so far
       result_node = new cool_ast.BinaryOp(op_tok.value, result_node, rhs,
                                           op_tok.lineno);
+      // Create a better AST node for dispatches
+      if (op_tok.name === 'PERIOD') {
+        result_node = this._fixup_binary_dispatch(result_node);
+      }
     } else {
       break;
     }
@@ -479,4 +483,15 @@ Parser.prototype._parse_dispatch = function(atom) {
                                          name_tok.value, args, atom.loc);
     }
   }
+}
+
+// A dot dispatch can be cascaded and thus participate in a BinaryOp tree.
+// Fix up BinaryOp(left=someexpr, right=Dispatch(zzz)) to its real meaning of
+// Dispatch(expr=someexpr, ... zzz)
+Parser.prototype._fixup_binary_dispatch = function(binop) {
+  if (!(binop.right instanceof cool_ast.Dispatch)) {
+    this._error("invalid dispatch");
+  }
+  return new cool_ast.Dispatch(binop.left, binop.right.name, binop.right.actual,
+                               binop.loc);
 }

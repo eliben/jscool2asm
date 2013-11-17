@@ -237,8 +237,6 @@ var test_expr_basic_atoms = function() {
   e = parse_expr('"a string"');
   assert.ok(e instanceof ast.StringConst);
   assert.equal(e.str, '"a string"');
-
-  //console.log(ast_visitor.dump_ast(e));
 }
 
 var test_expr_blocks = function() {
@@ -258,6 +256,12 @@ var test_expr_dispatch = function() {
 
   e = parse_expr('joe@Klass.foo(bar)');
   _compare_ast_dump(e, 'StaticDispatch(type_name=Klass, name=foo) Obj(name=joe) Obj(name=bar)');
+
+  e = parse_expr('(new Foo).foo(bar, baz)');
+  _compare_ast_dump(e, 'Dispatch(name=foo) New(type_name=Foo) Obj(name=bar) Obj(name=baz)');
+
+  e = parse_expr('(new Foo).foo(bar, baz).kwa(2)');
+  _compare_ast_dump(e, 'Dispatch(name=kwa) Dispatch(name=foo) New(type_name=Foo) Obj(name=bar) Obj(name=baz) IntConst(token=2)');
 }
 
 // Miscellaneous expression tests for bugs that come up, etc.
